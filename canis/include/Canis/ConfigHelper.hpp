@@ -116,7 +116,9 @@ inline void DrawInspectorField(Editor *_editor, const char *_label, const char *
     }
     else if constexpr (std::is_same_v<T, Mask>)
     {
-        ImGui::PushID((_idSuffix != nullptr && _idSuffix[0] != '\0') ? _idSuffix : _label);
+        ImGui::PushID(_label);
+        if (_idSuffix != nullptr && _idSuffix[0] != '\0')
+            ImGui::PushID(_idSuffix);
 
         ImGui::TextUnformatted(_label);
         ImGui::SameLine();
@@ -173,6 +175,8 @@ inline void DrawInspectorField(Editor *_editor, const char *_label, const char *
         }
 
         ImGui::PopStyleVar();
+        if (_idSuffix != nullptr && _idSuffix[0] != '\0')
+            ImGui::PopID();
         ImGui::PopID();
     }
     else if constexpr (std::is_integral_v<T>)
