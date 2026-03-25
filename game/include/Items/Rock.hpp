@@ -1,9 +1,9 @@
 #pragma once
 #include <I_Interactable.hpp>
-#include <Items/I_Item.hpp>
+#include <SuperPupUtilities/I_Item.hpp>
 #include <Canis/Entity.hpp>
 
-class Rock : public Canis::ScriptableEntity, public I_Item, public I_Interactable
+class Rock : public Canis::ScriptableEntity, public SuperPupUtilities::I_Item, public I_Interactable
 {
 public:
     static constexpr const char* ScriptName = "Rock";
@@ -15,7 +15,7 @@ public:
     void Destroy();
     void Update(float _dt);
 
-    // I_Item
+    // SuperPupUtilities::I_Item
     std::string GetName() override;
 
     // I_Interactable

@@ -2,7 +2,7 @@
 
 #include <Environment/I_Block.hpp>
 #include <I_Interactable.hpp>
-#include <Items/I_Item.hpp>
+#include <SuperPupUtilities/I_Item.hpp>
 #include <UI/InfoText.hpp>
 
 #include <Canis/App.hpp>

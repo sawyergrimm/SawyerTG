@@ -478,7 +478,7 @@ Entities:
     SuperPupUtilities::FPSCounter: ~
   - Entity: 7544183909755889777
     Name: Player
-    Tag: ""
+    Tag: Player
     Canis::Transform:
       active: true
       position: [0, 1.7835209, 0]
@@ -528,6 +528,7 @@ Entities:
       groundCollisionMask: 1
       scannerCollisionMask: 12
       pickupRadius: 1.15
+    SuperPupUtilities::Inventory: ~
   - Entity: 4317909316194178768
     Name: Info_Text
     Tag: INFO_TEXT

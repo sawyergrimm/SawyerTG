@@ -1,5 +1,7 @@
 #include <Items/Gold.hpp>
 
+#include <SuperPupUtilities/Inventory.hpp>
+
 #include <Canis/App.hpp>
 #include <Canis/InputManager.hpp>
 #include <Canis/ConfigHelper.hpp>
@@ -38,6 +40,10 @@ bool Gold::HandleInteraction() {
     InputManager& input = entity.scene.GetInputManager();
 
     if (input.JustPressedKey(Key::E)) {
+        if (Entity* playerEntity = entity.scene.GetEntityWithTag("Player"))
+            if (SuperPupUtilities::Inventory* inventory = playerEntity->GetScript<SuperPupUtilities::Inventory>())
+                inventory->Add(*this, 1);
+
         entity.Destroy();
         return true;
     }

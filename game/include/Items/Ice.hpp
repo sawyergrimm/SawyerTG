@@ -1,9 +1,9 @@
 #pragma once
 #include <I_Interactable.hpp>
-#include <Items/I_Item.hpp>
+#include <SuperPupUtilities/I_Item.hpp>
 #include <Canis/Entity.hpp>
 
-class Ice : public Canis::ScriptableEntity, public I_Item, public I_Interactable
+class Ice : public Canis::ScriptableEntity, public SuperPupUtilities::I_Item, public I_Interactable
 {
 public:
     static constexpr const char* ScriptName = "Ice";
