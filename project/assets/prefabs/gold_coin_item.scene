@@ -1,0 +1,51 @@
+Environment:
+  ClearColor: [0.09, 0.12, 0.17, 1]
+Entities:
+  - Entity: 9449876250406915687
+    Name: Gold_Coin_Item
+    Tag: ""
+    Canis::Transform:
+      active: true
+      position: [0, 0, 0]
+      rotation: [0, 0, 0]
+      scale: [0.35, 0.35, 0.125]
+      parent: 0
+      children:
+        []
+    Canis::Rigidbody:
+      active: true
+      motionType: 0
+      mass: 1
+      friction: 0.2
+      restitution: 0
+      linearDamping: 0.05
+      angularDamping: 0.05
+      useGravity: false
+      isSensor: true
+      layer: 8
+      mask: 4294967295
+      allowSleeping: false
+      lockRotationX: false
+      lockRotationY: false
+      lockRotationZ: false
+      linearVelocity: [0, 0, 0]
+      angularVelocity: [0, 0, 0]
+    Canis::BoxCollider:
+      active: true
+      size: [1, 1, 1]
+    Canis::Material:
+      color: [1, 0.87, 0.22, 1]
+      MaterialAsset:
+        uuid: 17490362529814420531
+    Canis::Model:
+      color: [1, 0.87, 0.22, 1]
+      ModelAsset:
+        path: assets/defaults/models/cube.glb
+        uuid: 17154083321347000101
+    GoldCoin: ~
+    PickupEffect:
+      rotationSpeed: 120
+      fallSpeed: 1
+      amplitued: 0.2
+      targetGroundOffset: 1
+      groundCollisionMask: 1

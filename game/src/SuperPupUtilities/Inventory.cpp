@@ -57,32 +57,46 @@ namespace SuperPupUtilities
         m_slots.push_back(slot);
     }
 
-    bool Inventory::Remove(I_Item &_item, int _amount) {
-        if (Slot* slot = GetSlot(_item.GetName())) {
-            if (slot->count - _amount < 0) {
+    bool Inventory::Remove(std::string _name, int _amount)
+    {
+        if (_amount <= 0)
+        {
+            Debug::Warning("Called Inventory::Remove with _amount: %i can not remove this amount", _amount);
+            return false;
+        }
+
+        if (Slot* slot = GetSlot(_name))
+        {
+            if (slot->count - _amount < 0)
+            {
                 Debug::Warning("Called Inventory::Remove with _amount: %i can not remove this amount", _amount);
                 return false;
             }
-            
+
             slot->count -= _amount;
 
             if (slot->count == 0)
             {
-                std::string name = _item.GetName();
                 int index = -1;
 
                 for (int i = 0; i < m_slots.size(); i++)
-                    if (m_slots[i].name == name)
+                    if (m_slots[i].name == _name)
                         index = i;
-                
-                m_slots.erase(m_slots.begin()+index);
+
+                if (index >= 0)
+                    m_slots.erase(m_slots.begin() + index);
             }
 
-            Debug::Warning("Inventory::Remove was called but item was not found in Inventory");
             return true;
         }
 
+        Debug::Warning("Inventory::Remove was called but item was not found in Inventory");
         return false;
+    }
+
+    bool Inventory::Remove(I_Item &_item, int _amount)
+    {
+        return Remove(_item.GetName(), _amount);
     }
 
     int Inventory::GetCount(I_Item &_item) {

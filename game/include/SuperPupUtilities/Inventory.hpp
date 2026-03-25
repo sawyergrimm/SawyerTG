@@ -28,6 +28,7 @@ namespace SuperPupUtilities
         void Update(float _dt);
 
         void Add(I_Item &_item, int _amount);
+        bool Remove(std::string _name, int _amount);
         bool Remove(I_Item &_item, int _amount);
 
         int GetCount(I_Item &_item);

@@ -8,7 +8,7 @@ ScriptConf iceBlockConf = {};
 
 void RegisterIceBlockScript(App& _app)
 {
-    DEFAULT_CONFIG_AND_REQUIRED(iceBlockConf, IceBlock, RectTransform);
+    DEFAULT_CONFIG(iceBlockConf, IceBlock);
     REGISTER_PROPERTY(iceBlockConf, IceBlock, dropPrefab);
 
     iceBlockConf.DEFAULT_DRAW_INSPECTOR(IceBlock);

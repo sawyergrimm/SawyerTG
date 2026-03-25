@@ -8,7 +8,7 @@ ScriptConf uraniumBlockConf = {};
 
 void RegisterUraniumBlockScript(App& _app)
 {
-    DEFAULT_CONFIG_AND_REQUIRED(uraniumBlockConf, UraniumBlock, RectTransform);
+    DEFAULT_CONFIG(uraniumBlockConf, UraniumBlock);
     REGISTER_PROPERTY(uraniumBlockConf, UraniumBlock, dropPrefab);
 
     uraniumBlockConf.DEFAULT_DRAW_INSPECTOR(UraniumBlock);

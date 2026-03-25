@@ -12,7 +12,7 @@ public:
 
     explicit GoldBlock(Canis::Entity &_entity) : Canis::ScriptableEntity(_entity) {}
 
-    Canis::SceneAssetHandle dropPrefab = {};
+    Canis::SceneAssetHandle dropPrefab = {"assets/prefabs/gold_ore_item.scene"};
 
     void Create();
     void Ready();

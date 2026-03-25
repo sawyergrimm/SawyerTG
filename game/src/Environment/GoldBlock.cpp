@@ -8,7 +8,7 @@ ScriptConf goldBlockConf = {};
 
 void RegisterGoldBlockScript(App& _app)
 {
-    DEFAULT_CONFIG_AND_REQUIRED(goldBlockConf, GoldBlock, RectTransform);
+    DEFAULT_CONFIG_AND_REQUIRED(goldBlockConf, GoldBlock);
     REGISTER_PROPERTY(goldBlockConf, GoldBlock, dropPrefab);
 
     goldBlockConf.DEFAULT_DRAW_INSPECTOR(GoldBlock);

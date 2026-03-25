@@ -8,7 +8,7 @@ ScriptConf rockBlockConf = {};
 
 void RegisterRockBlockScript(App& _app)
 {
-    DEFAULT_CONFIG_AND_REQUIRED(rockBlockConf, RockBlock, RectTransform);
+    DEFAULT_CONFIG(rockBlockConf, RockBlock);
     REGISTER_PROPERTY(rockBlockConf, RockBlock, dropPrefab);
 
     rockBlockConf.DEFAULT_DRAW_INSPECTOR(RockBlock);

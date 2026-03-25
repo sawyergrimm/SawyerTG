@@ -317,7 +317,7 @@ Entities:
         path: assets/defaults/models/cube.glb
         uuid: 17154083321347000101
     GoldBlock:
-      dropPrefab: assets/prefabs/gold_item.scene
+      dropPrefab: assets/prefabs/gold_ore_item.scene
   - Entity: 910102
     Name: Uranium_Block
     Tag: ""
@@ -554,14 +554,14 @@ Entities:
     InfoText:
       timer: 0
       fadeoutTime: 0.5
-  - Entity: 9449876250406915685
-    Name: Gold_Item
+  - Entity: 2792323236521254358
+    Name: Furnace
     Tag: ""
     Canis::Transform:
       active: true
-      position: [-2.9232635, 3, -6]
+      position: [6, 0.8, 6]
       rotation: [0, 0, 0]
-      scale: [0.5, 0.5, 0.5]
+      scale: [1, 1, 1]
       parent: 0
       children:
         []
@@ -574,8 +574,8 @@ Entities:
       linearDamping: 0.05
       angularDamping: 0.05
       useGravity: false
-      isSensor: true
-      layer: 8
+      isSensor: false
+      layer: 5
       mask: 4294967295
       allowSleeping: false
       lockRotationX: false
@@ -587,162 +587,16 @@ Entities:
       active: true
       size: [1, 1, 1]
     Canis::Material:
-      color: [1, 0.87, 0.22, 1]
+      color: [0.4779412, 0.5735294, 0.56790656, 1]
       MaterialAsset:
         uuid: 17490362529814420531
     Canis::Model:
-      color: [1, 0.87, 0.22, 1]
+      color: [0.3872549, 0.38662213, 0.38345826, 1]
       ModelAsset:
         path: assets/defaults/models/cube.glb
         uuid: 17154083321347000101
-    Gold: ~
-    PickupEffect:
-      rotationSpeed: 120
-      fallSpeed: 1
-      amplitued: 0.2
-      targetGroundOffset: 1
-      groundCollisionMask: 1
-  - Entity: 14413901155226443844
-    Name: Uranium_Item
-    Tag: ""
-    Canis::Transform:
-      active: true
-      position: [3, 3, -6]
-      rotation: [0, 0, 0]
-      scale: [0.5, 0.5, 0.5]
-      parent: 0
-      children:
-        []
-    Canis::Rigidbody:
-      active: true
-      motionType: 0
-      mass: 1
-      friction: 0.2
-      restitution: 0
-      linearDamping: 0.05
-      angularDamping: 0.05
-      useGravity: false
-      isSensor: true
-      layer: 8
-      mask: 4294967295
-      allowSleeping: false
-      lockRotationX: false
-      lockRotationY: false
-      lockRotationZ: false
-      linearVelocity: [0, 0, 0]
-      angularVelocity: [0, 0, 0]
-    Canis::BoxCollider:
-      active: true
-      size: [1, 1, 1]
-    Canis::Material:
-      color: [0.05882353, 1, 0, 1]
-      MaterialAsset:
-        uuid: 17490362529814420531
-    Canis::Model:
-      color: [1, 0.87, 0.22, 1]
-      ModelAsset:
-        path: assets/defaults/models/cube.glb
-        uuid: 17154083321347000101
-    PickupEffect:
-      rotationSpeed: 120
-      fallSpeed: 1
-      amplitued: 0.2
-      targetGroundOffset: 1
-      groundCollisionMask: 1
-    Uranium: ~
-  - Entity: 12890399760630819389
-    Name: Rock_Item
-    Tag: ""
-    Canis::Transform:
-      active: true
-      position: [0, 3, -3]
-      rotation: [0, 0, 0]
-      scale: [0.5, 0.5, 0.5]
-      parent: 0
-      children:
-        []
-    Canis::Rigidbody:
-      active: true
-      motionType: 0
-      mass: 1
-      friction: 0.2
-      restitution: 0
-      linearDamping: 0.05
-      angularDamping: 0.05
-      useGravity: false
-      isSensor: true
-      layer: 8
-      mask: 4294967295
-      allowSleeping: false
-      lockRotationX: false
-      lockRotationY: false
-      lockRotationZ: false
-      linearVelocity: [0, 0, 0]
-      angularVelocity: [0, 0, 0]
-    Canis::BoxCollider:
-      active: true
-      size: [1, 1, 1]
-    Canis::Material:
-      color: [0.1882353, 0.18431373, 0.16470589, 1]
-      MaterialAsset:
-        uuid: 17490362529814420531
-    Canis::Model:
-      color: [0.52156866, 0.5058824, 0.44705883, 1]
-      ModelAsset:
-        path: assets/defaults/models/cube.glb
-        uuid: 17154083321347000101
-    PickupEffect:
-      rotationSpeed: 120
-      fallSpeed: 1
-      amplitued: 0.2
-      targetGroundOffset: 1
-      groundCollisionMask: 1
-    Rock: ~
-  - Entity: 12890399760630819390
-    Name: Ice_Item
-    Tag: ""
-    Canis::Transform:
-      active: true
-      position: [6, 3, -3]
-      rotation: [0, 0, 0]
-      scale: [0.5, 0.5, 0.5]
-      parent: 0
-      children:
-        []
-    Canis::Rigidbody:
-      active: true
-      motionType: 0
-      mass: 1
-      friction: 0.2
-      restitution: 0
-      linearDamping: 0.05
-      angularDamping: 0.05
-      useGravity: false
-      isSensor: true
-      layer: 8
-      mask: 4294967295
-      allowSleeping: false
-      lockRotationX: false
-      lockRotationY: false
-      lockRotationZ: false
-      linearVelocity: [0, 0, 0]
-      angularVelocity: [0, 0, 0]
-    Canis::BoxCollider:
-      active: true
-      size: [1, 1, 1]
-    Canis::Material:
-      color: [0.55, 0.85, 1, 1]
-      MaterialAsset:
-        uuid: 17490362529814420531
-    Canis::Model:
-      color: [0.55, 0.85, 1, 1]
-      ModelAsset:
-        path: assets/defaults/models/cube.glb
-        uuid: 17154083321347000101
-    Ice: ~
-    PickupEffect:
-      rotationSpeed: 120
-      fallSpeed: 1
-      amplitued: 0.2
-      targetGroundOffset: 1
-      groundCollisionMask: 1
+    Furnace:
+      goldOreCount: 0
+      timeLeft: 0
+      processingTime: 5
+      dropPrefab: assets/prefabs/gold_item.scene
