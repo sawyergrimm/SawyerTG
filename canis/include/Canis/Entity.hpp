@@ -237,6 +237,33 @@ namespace Canis
 		"Center Left", "Center", "Center Right",
 		"Bottom Left", "Bottom Center", "Bottom Right"};
 
+    namespace CanvasRenderMode
+    {
+        constexpr unsigned int SCREEN_SPACE_OVERLAY = 0u;
+        constexpr unsigned int SCREEN_SPACE_CAMERA = 1u;
+        constexpr unsigned int WORLD_SPACE = 2u;
+    }
+
+    static const char *CanvasRenderModeLabels[] = {
+        "Screen Space Overlay",
+        "Screen Space Camera",
+        "World Space"};
+
+    struct Canvas
+    {
+    public:
+        static constexpr const char* ScriptName = "Canis::Canvas";
+
+        Canvas() = default;
+        explicit Canvas(Canis::Entity& _entity) : entity(&_entity) {}
+
+        void Create() {}
+        Entity* entity = nullptr;
+
+        bool active = true;
+        unsigned int renderMode = CanvasRenderMode::SCREEN_SPACE_OVERLAY;
+    };
+
     struct RectTransform
     {
     public:
@@ -254,6 +281,9 @@ namespace Canis
         Vector2 position = Vector2(0.0f);
         Vector2 size = Vector2(32.0f);
         Vector2 scale = Vector2(1.0f);
+        Vector2 anchorMin = Vector2(0.5f, 0.5f);
+        Vector2 anchorMax = Vector2(0.5f, 0.5f);
+        Vector2 pivot = Vector2(0.5f, 0.5f);
         Vector2 originOffset = Vector2(0.0f);
         float   depth = 0.001f;
         float   rotation = 0.0f;
@@ -261,48 +291,19 @@ namespace Canis
         Entity*  parent = nullptr;
 		std::vector<Entity*> children;
 
-        Vector2 GetPosition() const
-        {
-            Vector2 localPos = position + originOffset;
+        Vector2 GetPosition() const;
 
-            if (!parent || !parent->HasComponent<RectTransform>())
-                return localPos;
+        void SetPosition(Vector2 _globalPos);
 
-            RectTransform& parentRT = parent->GetComponent<RectTransform>();
-            Vector2 parentPos = parentRT.GetPosition();
-            float parentRot   = parentRT.GetRotation();
-            Vector2 parentScale = parentRT.GetScale();
+        Vector2 GetResolvedSize() const;
 
-            Vector2 scaled(
-                localPos.x * parentScale.x,
-                localPos.y * parentScale.y
-            );
-            
-            Vector2 rotatedLocal = RotatePoint(scaled, parentRot);
-            return parentPos + rotatedLocal;
-        }
+        Vector2 GetRectMin() const;
 
-        void SetPosition(Vector2 _globalPos)
-        {
-            if (parent)
-            {
-                if (parent->HasComponent<RectTransform>())
-                {
-                    RectTransform& parentRT = parent->GetComponent<RectTransform>();
+        unsigned int GetCanvasRenderMode() const;
 
-                    Vector2 parentPos = parentRT.GetPosition();
-                    float parentRot   = parentRT.GetRotation();
-                    
-                    Vector2 parentSpace = _globalPos - parentPos;
-                    Vector2 localPos = RotatePoint(parentSpace, -parentRot);
+        void SetAnchorPreset(RectAnchor _anchor);
 
-                    position = localPos - originOffset;
-                    return;
-                }
-            }
-
-            position = _globalPos - originOffset;
-        }
+        int GetAnchorPreset() const;
 
         void Move(Vector2 _delta)
         {
@@ -590,6 +591,18 @@ namespace Canis
             }
             }
         }
+
+    private:
+        struct LayoutData
+        {
+            Vector2 min = Vector2(0.0f);
+            Vector2 size = Vector2(0.0f);
+            Vector2 pivotPosition = Vector2(0.0f);
+        };
+
+        LayoutData GetLayout() const;
+        const Canvas* FindCanvas() const;
+        static Vector2 GetNormalizedAnchor(const RectAnchor &_anchor);
     };
 
     struct Transform
@@ -1228,11 +1241,11 @@ namespace Canis
         }
 
 
-        Vector2 GetPosition() { return m_position; }
-        Matrix4 GetCameraMatrix() { return m_cameraMatrix; }
-        Matrix4 GetViewMatrix() { return m_view; }
-        Matrix4 GetProjectionMatrix() { return m_projection; }
-        float GetScale() { return m_scale; }
+        Vector2 GetPosition() const { return m_position; }
+        Matrix4 GetCameraMatrix() const { return m_cameraMatrix; }
+        Matrix4 GetViewMatrix() const { return m_view; }
+        Matrix4 GetProjectionMatrix() const { return m_projection; }
+        float GetScale() const { return m_scale; }
         void UpdateMatrix();
 
 

@@ -319,6 +319,54 @@ namespace Canis
             _editor.InputSceneAsset(_label, _idSuffix, _value);
         });
 
+        ScriptConf canvasConf = {
+            .name = "Canis::Canvas",
+            .Construct = nullptr,
+            .Add = [this](Entity& _entity) -> void {
+                if (!_entity.HasComponent<RectTransform>())
+                    _entity.AddComponent<RectTransform>();
+                _entity.AddComponent<Canvas>();
+            },
+            .Has = [this](Entity& _entity) -> bool { return _entity.HasComponent<Canvas>(); },
+            .Remove = [this](Entity& _entity) -> void { _entity.RemoveComponent<Canvas>(); },
+            .Get = [this](Entity& _entity) -> void* { return _entity.HasComponent<Canvas>() ? (void*)(&_entity.GetComponent<Canvas>()) : nullptr; },
+            .Encode = [](YAML::Node &_node, Entity &_entity) -> void {
+                if (_entity.HasComponent<Canvas>())
+                {
+                    Canvas& canvas = _entity.GetComponent<Canvas>();
+
+                    YAML::Node comp;
+                    comp["active"] = canvas.active;
+                    comp["renderMode"] = canvas.renderMode;
+                    _node["Canis::Canvas"] = comp;
+                }
+            },
+            .Decode = [](YAML::Node &_node, Entity &_entity, bool _callCreate) -> void {
+                if (auto canvasNode = _node["Canis::Canvas"])
+                {
+                    auto &canvas = *_entity.AddComponent<Canvas>();
+                    canvas.active = canvasNode["active"].as<bool>(true);
+                    canvas.renderMode = canvasNode["renderMode"].as<unsigned int>(CanvasRenderMode::SCREEN_SPACE_OVERLAY);
+
+                    if (_callCreate)
+                        canvas.Create();
+                }
+            },
+            .DrawInspector = [this](Editor& _editor, Entity& _entity, const ScriptConf& _conf) -> void {
+                Canvas* canvas = nullptr;
+                if (_entity.HasComponent<Canvas>() && ((canvas = &_entity.GetComponent<Canvas>()), true))
+                {
+                    ImGui::Checkbox("active", &canvas->active);
+
+                    int renderMode = static_cast<int>(canvas->renderMode);
+                    if (ImGui::Combo("renderMode", &renderMode, CanvasRenderModeLabels, IM_ARRAYSIZE(CanvasRenderModeLabels)))
+                        canvas->renderMode = static_cast<unsigned int>(renderMode);
+                }
+            },
+        };
+
+        RegisterScript(canvasConf);
+
         ScriptConf rectTransformConf = {
             .name = "Canis::RectTransform",
             .Construct = nullptr,
@@ -338,9 +386,13 @@ namespace Canis
                     comp["position"] = transform.position;
                     comp["size"] = transform.size;
                     comp["scale"] = transform.scale;
+                    comp["anchorMin"] = transform.anchorMin;
+                    comp["anchorMax"] = transform.anchorMax;
+                    comp["pivot"] = transform.pivot;
                     comp["originOffset"] = transform.originOffset;
                     comp["depth"] = transform.depth;
                     comp["rotation"] = transform.rotation;
+                    comp["rotationOriginOffset"] = transform.rotationOriginOffset;
                     comp["parent"] = (transform.parent == nullptr) ? Canis::UUID(0) : transform.parent->uuid;
                     // children
                     YAML::Node children = YAML::Node(YAML::NodeType::Sequence);
@@ -359,14 +411,17 @@ namespace Canis
                 if (auto rectTransform = _node["Canis::RectTransform"])
                 {
                     auto &rt = *_entity.AddComponent<RectTransform>();
-                    rt.active = rectTransform["active"].as<bool>();
-                    //rt.anchor = (Canis::RectAnchor)rectTransform["anchor"].as<int>();
-                    rt.position = rectTransform["position"].as<Vector2>();
-                    rt.size = rectTransform["size"].as<Vector2>();
-                    rt.scale = rectTransform["scale"].as<Vector2>();
-                    rt.originOffset = rectTransform["originOffset"].as<Vector2>();
-                    rt.depth = rectTransform["depth"].as<float>();
-                    rt.rotation = rectTransform["rotation"].as<float>();
+                    rt.active = rectTransform["active"].as<bool>(true);
+                    rt.position = rectTransform["position"].as<Vector2>(rt.position);
+                    rt.size = rectTransform["size"].as<Vector2>(rt.size);
+                    rt.scale = rectTransform["scale"].as<Vector2>(rt.scale);
+                    rt.anchorMin = rectTransform["anchorMin"].as<Vector2>(rt.anchorMin);
+                    rt.anchorMax = rectTransform["anchorMax"].as<Vector2>(rt.anchorMax);
+                    rt.pivot = rectTransform["pivot"].as<Vector2>(rt.pivot);
+                    rt.originOffset = rectTransform["originOffset"].as<Vector2>(rt.originOffset);
+                    rt.depth = rectTransform["depth"].as<float>(rt.depth);
+                    rt.rotation = rectTransform["rotation"].as<float>(rt.rotation);
+                    rt.rotationOriginOffset = rectTransform["rotationOriginOffset"].as<Vector2>(rt.rotationOriginOffset);
 
                     if (rectTransform["parent"].as<Canis::UUID>(0) != Canis::UUID(0))
                         _entity.scene.GetEntityAfterLoad(rectTransform["parent"].as<Canis::UUID>(0), rt.parent);
@@ -394,15 +449,43 @@ namespace Canis
                 RectTransform* transform = nullptr;
                 if (_entity.HasComponent<RectTransform>() && ((transform = &_entity.GetComponent<RectTransform>()), true))
                 {
+                    ImGui::Checkbox("active", &transform->active);
                     ImGui::InputFloat2("position", &transform->position.x, "%.3f");
                     ImGui::InputFloat2("size", &transform->size.x, "%.3f");
                     ImGui::InputFloat2("scale", &transform->scale.x, "%.3f");
+                    int anchorPreset = transform->GetAnchorPreset();
+                    int anchorPresetSelection = anchorPreset < 0 ? 0 : anchorPreset + 1;
+                    static const char* anchorPresetLabels[] = {
+                        "Custom",
+                        "Top Left", "Top Center", "Top Right",
+                        "Center Left", "Center", "Center Right",
+                        "Bottom Left", "Bottom Center", "Bottom Right"
+                    };
+                    if (ImGui::Combo("anchorPreset", &anchorPresetSelection, anchorPresetLabels, IM_ARRAYSIZE(anchorPresetLabels)) && anchorPresetSelection > 0)
+                        transform->SetAnchorPreset(static_cast<RectAnchor>(anchorPresetSelection - 1));
+
+                    ImGui::InputFloat2("anchorMin", &transform->anchorMin.x, "%.3f");
+                    ImGui::InputFloat2("anchorMax", &transform->anchorMax.x, "%.3f");
+                    ImGui::InputFloat2("pivot", &transform->pivot.x, "%.3f");
                     ImGui::InputFloat2("originOffset", &transform->originOffset.x, "%.3f");
+                    ImGui::InputFloat2("rotationOriginOffset", &transform->rotationOriginOffset.x, "%.3f");
                     ImGui::InputFloat("depth", &transform->depth);
                     // let user work with degrees
                     float degrees = RAD2DEG * transform->rotation;
                     ImGui::InputFloat("rotation", &degrees);
                     transform->rotation = DEG2RAD * degrees;
+
+                    auto clamp01 = [](float value) -> float
+                    {
+                        return std::clamp(value, 0.0f, 1.0f);
+                    };
+
+                    transform->anchorMin.x = clamp01(transform->anchorMin.x);
+                    transform->anchorMin.y = clamp01(transform->anchorMin.y);
+                    transform->anchorMax.x = std::clamp(transform->anchorMax.x, transform->anchorMin.x, 1.0f);
+                    transform->anchorMax.y = std::clamp(transform->anchorMax.y, transform->anchorMin.y, 1.0f);
+                    transform->pivot.x = clamp01(transform->pivot.x);
+                    transform->pivot.y = clamp01(transform->pivot.y);
                 }
             },
         };

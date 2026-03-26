@@ -44,6 +44,29 @@ namespace Canis
         return _label;
     }
 
+    namespace
+    {
+        struct RectTransformRenderBounds
+        {
+            Vector2 min = Vector2(0.0f);
+            Vector2 size = Vector2(0.0f);
+            Vector2 rotationPivot = Vector2(0.0f);
+        };
+
+        RectTransformRenderBounds GetRenderBounds(const Entity& _entity, const RectTransform& _transform)
+        {
+            RectTransformRenderBounds bounds = {};
+            bounds.min = _transform.GetRectMin() + _transform.originOffset;
+            bounds.size = _transform.GetResolvedSize();
+            bounds.rotationPivot = _transform.GetPosition();
+
+            if (_entity.HasComponent<Text>())
+                bounds.rotationPivot += _transform.rotationOriginOffset;
+
+            return bounds;
+        }
+    }
+
     static std::string ResolveAssetRefPath(const YAML::Node &_node)
     {
         if (!_node)
@@ -3006,39 +3029,25 @@ namespace Canis
             if (transform == nullptr)
                 continue;
 
-            Vector2 globalPos = transform->GetPosition();    // rect_transform.GetGlobalPosition(window->GetScreenWidth(), window->GetScreenHeight());
-            float globalRotation = transform->GetRotation(); // rect_transform.GetGlobalRotation();
+            const RectTransformRenderBounds bounds = GetRenderBounds(*candidate, *transform);
+            float globalRotation = transform->GetRotation();
             Vector2 selectionMouse = mouse;
 
             if (globalRotation != 0.0f)
             {
                 RotatePointAroundPivot(
                     selectionMouse,
-                    globalPos /* + rect_transform.rotationOriginOffset */,
+                    bounds.rotationPivot,
                     globalRotation);
             }
 
-            Vector2 globalScale = transform->GetScale();
-
-            if (!(candidate != nullptr && candidate->HasComponent<Text>()))
+            if (selectionMouse.x > bounds.min.x &&
+                selectionMouse.x < bounds.min.x + bounds.size.x &&
+                selectionMouse.y > bounds.min.y &&
+                selectionMouse.y < bounds.min.y + bounds.size.y &&
+                !mouseLock)
             {
-                if (selectionMouse.x > globalPos.x - transform->size.x * 0.5f * globalScale.x &&
-                    selectionMouse.x < globalPos.x + transform->size.x * 0.5f * globalScale.x &&
-                    selectionMouse.y > globalPos.y - transform->size.y * 0.5f * globalScale.y &&
-                    selectionMouse.y < globalPos.y + transform->size.y * 0.5f * globalScale.y &&
-                    !mouseLock)
-                {
-                    m_index = i;
-                }
-            } else {
-                if (selectionMouse.x > globalPos.x &&
-                    selectionMouse.x < globalPos.x + transform->size.x * globalScale.x &&
-                    selectionMouse.y > globalPos.y &&
-                    selectionMouse.y < globalPos.y + transform->size.y * globalScale.y &&
-                    !mouseLock)
-                {
-                    m_index = i;
-                }
+                m_index = i;
             }
         }
     }
@@ -3112,32 +3121,20 @@ namespace Canis
         static Canis::Shader debugLineShader("assets/shaders/debug_line.vs", "assets/shaders/debug_line.fs");
         Entity &debugRectTransformEntity = *m_scene->GetEntities()[m_index];
         RectTransform &rtc = debugRectTransformEntity.GetComponent<RectTransform>();
-        Vector2 pos = rtc.GetPosition();
-        Vector2 scale = rtc.GetScale();
+        const RectTransformRenderBounds bounds = GetRenderBounds(debugRectTransformEntity, rtc);
         Vector2 vertices[4];
 
-        Text* textComponent = debugRectTransformEntity.HasComponent<Text>() ? &debugRectTransformEntity.GetComponent<Text>() : nullptr;
-        if (textComponent) {
-            vertices[0] = {pos.x, pos.y};
-            vertices[1] = {pos.x + (rtc.size.x * scale.x), pos.y};
-            vertices[2] = {pos.x + (rtc.size.x * scale.x), pos.y + (rtc.size.y * scale.x)};
-            vertices[3] = {pos.x, pos.y + (rtc.size.y * scale.y)};
-        } 
-        else
-        {
-            vertices[0] = {pos.x - (rtc.size.x * scale.x * 0.5f), pos.y - (rtc.size.y * scale.y * 0.5f)};
-            vertices[1] = {pos.x + (rtc.size.x * scale.x * 0.5f), pos.y - (rtc.size.y * scale.y * 0.5f)};
-            vertices[2] = {pos.x + (rtc.size.x * scale.x * 0.5f), pos.y + (rtc.size.y * scale.y * 0.5f)};
-            vertices[3] = {pos.x - (rtc.size.x * scale.x * 0.5f), pos.y + (rtc.size.y * scale.y * 0.5f)};
-        }
+        vertices[0] = {bounds.min.x, bounds.min.y};
+        vertices[1] = {bounds.min.x + bounds.size.x, bounds.min.y};
+        vertices[2] = {bounds.min.x + bounds.size.x, bounds.min.y + bounds.size.y};
+        vertices[3] = {bounds.min.x, bounds.min.y + bounds.size.y};
 
-        
 
         for (Vector2 &v : vertices)
             RotatePointAroundPivot(
                 v,
-                Vector2(pos.x, pos.y) /*vertices[0] + rtc.originOffset + rtc.rotationOriginOffset*/,
-                -rtc.GetRotation() // debugRectTransform.GetGlobalRotation()
+                bounds.rotationPivot,
+                -rtc.GetRotation()
             );
 
         for (Vector2 &v : vertices)

@@ -23,6 +23,10 @@ namespace Canis
         if (_entity == nullptr || _transform == nullptr || _text == nullptr || _text->assetId < 0)
             return;
 
+        (void)_cameraPosition;
+        (void)_halfWidth;
+        (void)_halfHeight;
+
         TextAsset* font = AssetManager::GetText(_text->assetId);
 
         if (font == nullptr || _text->text.empty())
@@ -30,19 +34,11 @@ namespace Canis
 
         Vector2 transformPos = _transform->GetPosition();
         Vector2 transformScale = _transform->GetScale();
-        const float scaleX = transformScale.x;
-        const float scaleY = transformScale.y;
-
-        //if (!(transformPos.x > _cameraPosition.x - _halfWidth &&
-        //      transformPos.x < _cameraPosition.x + _halfWidth &&
-        //      transformPos.y > _cameraPosition.y - _halfHeight &&
-        //      transformPos.y < _cameraPosition.y + _halfHeight &&
-        //      _entity->active))
-        //{
-        //    return;
-        //}
-
-        const float maxWidth = _transform->size.x * scaleX;
+        const float scaleX = std::abs(transformScale.x);
+        const float scaleY = std::abs(transformScale.y);
+        const Vector2 rectSize = _transform->GetResolvedSize();
+        const Vector2 rectMin = _transform->GetRectMin() + _transform->originOffset;
+        const float maxWidth = rectSize.x;
         const bool wrap = (_text->horizontalBoundary == TextBoundary::WRAP) && (maxWidth > 0.0f);
         const float wrapWidth = (maxWidth > 0.0f) ? maxWidth : 0.0f;
 
@@ -90,28 +86,30 @@ namespace Canis
 
         if ((_text->_status & BIT::ONE) > 0)
         {
-            if (_text->horizontalBoundary == TextBoundary::TB_OVERFLOW && scaleX != 0.0f)
+            const bool canResizeWidth = _transform->anchorMin.x == _transform->anchorMax.x;
+            const bool canResizeHeight = _transform->anchorMin.y == _transform->anchorMax.y;
+
+            if (_text->horizontalBoundary == TextBoundary::TB_OVERFLOW && canResizeWidth && scaleX != 0.0f)
                 _transform->size.x = layoutWidth / std::abs(scaleX);
-            if (scaleY != 0.0f)
+            if (canResizeHeight && scaleY != 0.0f)
                 _transform->size.y = layoutHeight / std::abs(scaleY);
             _text->_status &= ~BIT::ONE;
         }
 
         auto computeLineStart = [&](float _lineWidth) -> float
         {
-            float sx = transformPos.x + _transform->originOffset.x;
             if (_text->alignment == TextAlignment::RIGHT)
-                sx -= _lineWidth;
-            else if (_text->alignment == TextAlignment::CENTER)
-                sx -= _lineWidth * 0.5f;
-            return sx;
+                return rectMin.x + rectSize.x - _lineWidth;
+            if (_text->alignment == TextAlignment::CENTER)
+                return rectMin.x + ((rectSize.x - _lineWidth) * 0.5f);
+            return rectMin.x;
         };
 
         const Vector2 textRotationPivot = transformPos + _transform->rotationOriginOffset;
 
         i32 lineIndex = 0;
         float x = computeLineStart(lineWidths[0]);
-        float y = transformPos.y + _transform->originOffset.y;
+        float y = rectMin.y + ((rectSize.y + layoutHeight) * 0.5f) - lineHeight;
 
         for (const unsigned char c : _text->text)
         {
@@ -152,7 +150,7 @@ namespace Canis
                     Vector4(xpos, ypos, w, h),
                     Vector4(ch.atlasPos.x, uvY, ch.atlasSize.x, ch.atlasSize.y),
                     GLTexture{font->GetTexture(), 0, 0},
-                    _transform->depth,
+                    _transform->GetDepth(),
                     _text->color,
                     _transform->GetRotation(),
                     Vector2(0.0f),
@@ -280,7 +278,6 @@ namespace Canis
 
     void SpriteRenderer2DSystem::DrawUI(const Vector4 &destRect, const Vector4 &uvRect, const GLTexture &texture, float depth, const Color &color, const float &angle, const Vector2 &origin, const Vector2 &rotationOriginOffset)
     {
-
         Glyph *newGlyph;
 
         if (glyphsCurrentIndex < glyphs.size())
@@ -544,8 +541,6 @@ namespace Canis
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDepthFunc(GL_LESS);
 
-        Begin(glyphSortType);
-
         bool cameraFound = false;
         bool editorCameraOverride = scene->HasEditorCamera2DOverride();
         Matrix4 overrideProjection = Matrix4(1.0f);
@@ -565,10 +560,8 @@ namespace Canis
             overrideProjection = scene->GetEditorCamera2DMatrix();
         }
 
-        // Draw
-        Vector2 positionAnchor = Vector2(0.0f);
-        float halfWidth = window->GetScreenWidth() / 2;
-        float halfHeight = window->GetScreenHeight() / 2;
+        float halfWidth = window->GetScreenWidth() / 2.0f;
+        float halfHeight = window->GetScreenHeight() / 2.0f;
         Vector2 camPos;
 
         if (editorCameraOverride)
@@ -577,62 +570,79 @@ namespace Canis
             camPos = camera2D->GetPosition();
         else
             camPos = Vector2(0.0f);
-        
-        /*Vector2 anchorTable[] = {
-            GetAnchor(Canis::RectAnchor::TOPLEFT, (float)window->GetScreenWidth(), (float)window->GetScreenHeight()),
-            GetAnchor(Canis::RectAnchor::TOPCENTER, (float)window->GetScreenWidth(), (float)window->GetScreenHeight()),
-            GetAnchor(Canis::RectAnchor::TOPRIGHT, (float)window->GetScreenWidth(), (float)window->GetScreenHeight()),
-            GetAnchor(Canis::RectAnchor::CENTERLEFT, (float)window->GetScreenWidth(), (float)window->GetScreenHeight()),
-            GetAnchor(Canis::RectAnchor::CENTER, (float)window->GetScreenWidth(), (float)window->GetScreenHeight()),
-            GetAnchor(Canis::RectAnchor::CENTERRIGHT, (float)window->GetScreenWidth(), (float)window->GetScreenHeight()),
-            GetAnchor(Canis::RectAnchor::BOTTOMLEFT, (float)window->GetScreenWidth(), (float)window->GetScreenHeight()),
-            GetAnchor(Canis::RectAnchor::BOTTOMCENTER, (float)window->GetScreenWidth(), (float)window->GetScreenHeight()),
-            GetAnchor(Canis::RectAnchor::BOTTOMRIGHT, (float)window->GetScreenWidth(), (float)window->GetScreenHeight())};
-        */
-        
-        Vector2 p;
-        Vector2 s;
 
-        auto renderView = _registry.view<RectTransform>();
-        for (const entt::entity entityHandle : renderView)
+        auto renderPass = [&](unsigned int _renderMode, const Matrix4* _projectionOverride, bool _useCameraProjection) -> void
         {
-            RectTransform &transform = renderView.get<RectTransform>(entityHandle);
-            Entity *entity = transform.entity;
-            if (entity == nullptr)
-                continue;
+            Begin(glyphSortType);
 
-            Sprite2D* sprite = _registry.try_get<Sprite2D>(entityHandle);
-            Text* text = _registry.try_get<Text>(entityHandle);
-
-            if (sprite != nullptr)
+            auto renderView = _registry.view<RectTransform>();
+            for (const entt::entity entityHandle : renderView)
             {
-                p = transform.GetPosition();
-                s = transform.GetScale();
-                s.x = s.x * transform.size.x;
-                s.y = s.y * transform.size.y;
-                if (p.x > camPos.x - s.x - halfWidth  &&
-                    p.x < camPos.x + s.x + halfWidth  &&
-                    p.y > camPos.y - s.y - halfHeight &&
-                    p.y < camPos.y + s.y + halfHeight &&
-                    entity->active)
+                RectTransform &transform = renderView.get<RectTransform>(entityHandle);
+                Entity *entity = transform.entity;
+                if (entity == nullptr || !entity->active || !transform.active)
+                    continue;
+
+                if (transform.GetCanvasRenderMode() != _renderMode)
+                    continue;
+
+                Sprite2D* sprite = _registry.try_get<Sprite2D>(entityHandle);
+                Text* text = _registry.try_get<Text>(entityHandle);
+
+                if (sprite != nullptr)
                 {
-                    Draw(
-                        Vector4(p.x, p.y, s.x, s.y),
-                        sprite->uv,
-                        sprite->textureHandle.texture,
-                        transform.GetDepth(),
-                        sprite->color,
-                        transform.GetRotation(),
-                        transform.originOffset);
+                    const Vector2 position = transform.GetPosition();
+                    const Vector2 size = transform.GetResolvedSize();
+
+                    if (_renderMode == CanvasRenderMode::SCREEN_SPACE_OVERLAY ||
+                        (position.x > camPos.x - size.x - halfWidth  &&
+                         position.x < camPos.x + size.x + halfWidth  &&
+                         position.y > camPos.y - size.y - halfHeight &&
+                         position.y < camPos.y + size.y + halfHeight))
+                    {
+                        const Vector2 pivotOffset(
+                            ((0.5f - transform.pivot.x) * size.x) + transform.originOffset.x,
+                            ((0.5f - transform.pivot.y) * size.y) + transform.originOffset.y);
+
+                        Draw(
+                            Vector4(position.x, position.y, size.x, size.y),
+                            sprite->uv,
+                            sprite->textureHandle.texture,
+                            transform.GetDepth(),
+                            sprite->color,
+                            transform.GetRotation(),
+                            pivotOffset);
+                    }
                 }
+
+                if (text != nullptr)
+                    DrawText(entity, &transform, text, camPos, halfWidth, halfHeight);
             }
 
-            if (text != nullptr && entity->active)
-                DrawText(entity, &transform, text, camPos, halfWidth, halfHeight);
+            End();
+            SpriteRenderBatch(_useCameraProjection, _projectionOverride);
+        };
+
+        Matrix4 centeredCameraProjection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -100.0f, 100.0f);
+
+        renderPass(Canis::CanvasRenderMode::SCREEN_SPACE_OVERLAY, &centeredCameraProjection, false);
+
+        const Matrix4* cameraProjectionOverride = nullptr;
+        bool useCameraProjection = true;
+
+        if (editorCameraOverride)
+        {
+            cameraProjectionOverride = &overrideProjection;
+            useCameraProjection = false;
+        }
+        else if (!cameraFound)
+        {
+            cameraProjectionOverride = &centeredCameraProjection;
+            useCameraProjection = false;
         }
 
-        End();
-        SpriteRenderBatch(cameraFound, editorCameraOverride ? &overrideProjection : nullptr);
+        renderPass(Canis::CanvasRenderMode::SCREEN_SPACE_CAMERA, cameraProjectionOverride, useCameraProjection);
+        renderPass(Canis::CanvasRenderMode::WORLD_SPACE, cameraProjectionOverride, useCameraProjection);
 
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
