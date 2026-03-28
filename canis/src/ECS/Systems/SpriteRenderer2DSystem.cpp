@@ -23,10 +23,6 @@ namespace Canis
         if (_entity == nullptr || _transform == nullptr || _text == nullptr || _text->assetId < 0)
             return;
 
-        (void)_cameraPosition;
-        (void)_halfWidth;
-        (void)_halfHeight;
-
         TextAsset* font = AssetManager::GetText(_text->assetId);
 
         if (font == nullptr || _text->text.empty())

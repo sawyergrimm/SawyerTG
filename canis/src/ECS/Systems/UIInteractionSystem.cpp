@@ -82,8 +82,6 @@ namespace Canis
 
     void UIInteractionSystem::Update(entt::registry &_registry, float _deltaTime)
     {
-        (void)_deltaTime;
-
         if (scene == nullptr || scene->app == nullptr || inputManager == nullptr || window == nullptr)
             return;
 

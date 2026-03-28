@@ -139,7 +139,6 @@ void GameUIController::OnQuitClicked(const Canis::UIActionContext &_context)
 
 void GameUIController::OnCloseFurnaceClicked(const Canis::UIActionContext &_context)
 {
-    (void)_context;
     SuppressWorldInteraction();
     m_furnaceEntity = nullptr;
     SetModalPage(ModalPage::None);

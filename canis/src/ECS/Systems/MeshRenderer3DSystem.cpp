@@ -157,8 +157,6 @@ namespace Canis
 
     void MeshRenderer3DSystem::Update(entt::registry &_registry, float _deltaTime)
     {
-        (void)_deltaTime;
-
         if (m_shader == nullptr)
             return;
 

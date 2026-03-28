@@ -1316,7 +1316,6 @@ namespace Canis
                 }
             },
             .DrawInspector = [this](Editor &_editor, Entity &_entity, const ScriptConf &_conf) -> void {
-                (void)_editor;
                 Rigidbody *rigidbody = _entity.HasComponent<Rigidbody>() ? &_entity.GetComponent<Rigidbody>() : nullptr;
                 if (rigidbody == nullptr)
                     return;
@@ -1388,7 +1387,6 @@ namespace Canis
                 }
             },
             .DrawInspector = [this](Editor &_editor, Entity &_entity, const ScriptConf &_conf) -> void {
-                (void)_editor;
                 BoxCollider *boxCollider = _entity.HasComponent<BoxCollider>() ? &_entity.GetComponent<BoxCollider>() : nullptr;
                 if (boxCollider == nullptr)
                     return;
@@ -1439,7 +1437,6 @@ namespace Canis
                 }
             },
             .DrawInspector = [this](Editor &_editor, Entity &_entity, const ScriptConf &_conf) -> void {
-                (void)_editor;
                 SphereCollider *sphereCollider = _entity.HasComponent<SphereCollider>() ? &_entity.GetComponent<SphereCollider>() : nullptr;
                 if (sphereCollider == nullptr)
                     return;
@@ -1492,7 +1489,6 @@ namespace Canis
                 }
             },
             .DrawInspector = [this](Editor &_editor, Entity &_entity, const ScriptConf &_conf) -> void {
-                (void)_editor;
                 CapsuleCollider *capsuleCollider = _entity.HasComponent<CapsuleCollider>() ? &_entity.GetComponent<CapsuleCollider>() : nullptr;
                 if (capsuleCollider == nullptr)
                     return;
@@ -1567,7 +1563,6 @@ namespace Canis
                 }
             },
             .DrawInspector = [this](Editor &_editor, Entity &_entity, const ScriptConf &_conf) -> void {
-                (void)_editor;
                 MeshCollider *meshCollider = _entity.HasComponent<MeshCollider>() ? &_entity.GetComponent<MeshCollider>() : nullptr;
                 if (meshCollider == nullptr)
                     return;

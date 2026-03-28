@@ -7,13 +7,33 @@
 #include <Canis/ConfigHelper.hpp>
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <cmath>
 #include <string>
+#include <thread>
 #include <unordered_set>
 
 namespace
 {
+    constexpr std::size_t kMaxChunkFinalizationsPerUpdate = 2u;
+
+    struct ChunkBuildSettings
+    {
+        int seed = 1337;
+        int chunkSize = 16;
+        int chunkHeight = 34;
+        int baseHeight = 6;
+        int maxHeightVariation = 13;
+        int hillHeightBoost = 14;
+        int bedrockLayerHeight = 1;
+        int surfaceIceHeight = 13;
+        float heightNoiseScale = 0.06f;
+        float detailNoiseScale = 0.14f;
+        float hillNoiseScale = 0.022f;
+        float caveNoiseScale = 0.12f;
+    };
+
     unsigned int HashU32(unsigned int _value)
     {
         _value ^= _value >> 16u;
@@ -22,6 +42,33 @@ namespace
         _value *= 0x846ca68bu;
         _value ^= _value >> 16u;
         return _value;
+    }
+
+    ChunkBuildSettings MakeChunkBuildSettings(const GenerateTerrain &_terrain)
+    {
+        return ChunkBuildSettings{
+            .seed = _terrain.seed,
+            .chunkSize = _terrain.chunkSize,
+            .chunkHeight = _terrain.chunkHeight,
+            .baseHeight = _terrain.baseHeight,
+            .maxHeightVariation = _terrain.maxHeightVariation,
+            .hillHeightBoost = _terrain.hillHeightBoost,
+            .bedrockLayerHeight = _terrain.bedrockLayerHeight,
+            .surfaceIceHeight = _terrain.surfaceIceHeight,
+            .heightNoiseScale = _terrain.heightNoiseScale,
+            .detailNoiseScale = _terrain.detailNoiseScale,
+            .hillNoiseScale = _terrain.hillNoiseScale,
+            .caveNoiseScale = _terrain.caveNoiseScale,
+        };
+    }
+
+    unsigned int GetMaxConcurrentChunkJobs()
+    {
+        const unsigned int hardwareThreads = std::thread::hardware_concurrency();
+        if (hardwareThreads <= 2u)
+            return 1u;
+
+        return hardwareThreads - 1u;
     }
 
     float Hash01(int _x, int _y, int _z, int _seed)
@@ -142,7 +189,8 @@ namespace
         return 1.0f - std::abs((FractalNoise3D(_x, _y, _z, _seed, _octaves) * 2.0f) - 1.0f);
     }
 
-    int GetTerrainHeight(const GenerateTerrain &_terrain, int _globalX, int _globalZ)
+    template <typename TerrainLike>
+    int GetTerrainHeight(const TerrainLike &_terrain, int _globalX, int _globalZ)
     {
         const float broad = FractalNoise2D(
             static_cast<float>(_globalX) * _terrain.heightNoiseScale,
@@ -181,7 +229,8 @@ namespace
                 ridgeLift));
     }
 
-    Canis::Vector3 GetCaveWarpedPosition(const GenerateTerrain &_terrain, int _globalX, int _y, int _globalZ)
+    template <typename TerrainLike>
+    Canis::Vector3 GetCaveWarpedPosition(const TerrainLike &_terrain, int _globalX, int _y, int _globalZ)
     {
         const float warpScale = std::max(0.005f, _terrain.caveNoiseScale * 0.38f);
         const float warpStrength = 6.0f;
@@ -214,7 +263,8 @@ namespace
             z + (warpZ * warpStrength));
     }
 
-    float GetSpaghettiTunnelField(const GenerateTerrain &_terrain, const Canis::Vector3 &_warpedPosition)
+    template <typename TerrainLike>
+    float GetSpaghettiTunnelField(const TerrainLike &_terrain, const Canis::Vector3 &_warpedPosition)
     {
         const float tunnelScale = std::max(0.01f, _terrain.caveNoiseScale * 1.28f);
         const float x = _warpedPosition.x;
@@ -255,7 +305,8 @@ namespace
         return Saturate(std::max(primaryTunnel, branchTunnel * 0.94f));
     }
 
-    float GetTallTunnelField(const GenerateTerrain &_terrain, int _globalX, int _y, int _globalZ)
+    template <typename TerrainLike>
+    float GetTallTunnelField(const TerrainLike &_terrain, int _globalX, int _y, int _globalZ)
     {
         float strongestTunnel = 0.0f;
         for (int verticalOffset = -1; verticalOffset <= 1; ++verticalOffset)
@@ -269,7 +320,8 @@ namespace
         return strongestTunnel;
     }
 
-    float GetChamberField(const GenerateTerrain &_terrain, const Canis::Vector3 &_warpedPosition)
+    template <typename TerrainLike>
+    float GetChamberField(const TerrainLike &_terrain, const Canis::Vector3 &_warpedPosition)
     {
         const float chamberScale = std::max(0.006f, _terrain.caveNoiseScale * 0.48f);
         const float x = _warpedPosition.x;
@@ -293,7 +345,8 @@ namespace
         return Saturate(chamberShape * chamberPresence);
     }
 
-    float GetCaveField(const GenerateTerrain &_terrain, int _globalX, int _y, int _globalZ)
+    template <typename TerrainLike>
+    float GetCaveField(const TerrainLike &_terrain, int _globalX, int _y, int _globalZ)
     {
         // Layered, warped noise keeps the cave network tunnel-first, with sparse chambers.
         const Canis::Vector3 warpedPosition = GetCaveWarpedPosition(_terrain, _globalX, _y, _globalZ);
@@ -302,7 +355,8 @@ namespace
         return Saturate(std::max(tunnelField, chamberField));
     }
 
-    bool IsTerrainAir(const GenerateTerrain &_terrain, int _globalX, int _y, int _globalZ, int _columnHeight)
+    template <typename TerrainLike>
+    bool IsTerrainAir(const TerrainLike &_terrain, int _globalX, int _y, int _globalZ, int _columnHeight)
     {
         if (_y < 0)
             return false;
@@ -333,13 +387,15 @@ namespace
         return caveField > caveThreshold;
     }
 
-    bool IsTerrainAir(const GenerateTerrain &_terrain, int _globalX, int _y, int _globalZ)
+    template <typename TerrainLike>
+    bool IsTerrainAir(const TerrainLike &_terrain, int _globalX, int _y, int _globalZ)
     {
         const int columnHeight = std::min(_terrain.chunkHeight, GetTerrainHeight(_terrain, _globalX, _globalZ));
         return IsTerrainAir(_terrain, _globalX, _y, _globalZ, columnHeight);
     }
 
-    bool IsAdjacentToAir(const GenerateTerrain &_terrain, int _globalX, int _y, int _globalZ)
+    template <typename TerrainLike>
+    bool IsAdjacentToAir(const TerrainLike &_terrain, int _globalX, int _y, int _globalZ)
     {
         static constexpr int kNeighborOffsets[6][3] = {
             { 1, 0, 0 },
@@ -377,7 +433,8 @@ namespace
         return _centerChunk - (_windowSize / 2);
     }
 
-    TerrainBlockType GetTerrainBlockType(const GenerateTerrain &_terrain, int _globalX, int _y, int _globalZ, int _columnHeight)
+    template <typename TerrainLike>
+    TerrainBlockType GetTerrainBlockType(const TerrainLike &_terrain, int _globalX, int _y, int _globalZ, int _columnHeight)
     {
         const bool isSurface = (_y == (_columnHeight - 1));
         if (_y < _terrain.bedrockLayerHeight)
@@ -412,6 +469,36 @@ namespace
         }
 
         return TerrainBlockType::Rock;
+    }
+
+    std::vector<unsigned char> BuildChunkBlocks(const ChunkBuildSettings &_settings, int _chunkX, int _chunkZ)
+    {
+        const std::size_t blockCount = static_cast<std::size_t>(_settings.chunkSize * _settings.chunkHeight * _settings.chunkSize);
+        std::vector<unsigned char> blocks(blockCount, static_cast<unsigned char>(TerrainBlockType::Air));
+
+        auto getIndex = [&](int _x, int _y, int _z) -> std::size_t
+        {
+            return static_cast<std::size_t>((( _z * _settings.chunkHeight) + _y) * _settings.chunkSize + _x);
+        };
+
+        for (int localZ = 0; localZ < _settings.chunkSize; ++localZ)
+        {
+            for (int localX = 0; localX < _settings.chunkSize; ++localX)
+            {
+                const int globalX = (_chunkX * _settings.chunkSize) + localX;
+                const int globalZ = (_chunkZ * _settings.chunkSize) + localZ;
+                const int columnHeight = std::min(_settings.chunkHeight, GetTerrainHeight(_settings, globalX, globalZ));
+
+                for (int y = 0; y < columnHeight; ++y)
+                {
+                    const TerrainBlockType blockType = GetTerrainBlockType(_settings, globalX, y, globalZ, columnHeight);
+                    if (blockType != TerrainBlockType::Air)
+                        blocks[getIndex(localX, y, localZ)] = static_cast<unsigned char>(blockType);
+                }
+            }
+        }
+
+        return blocks;
     }
 }
 
@@ -489,29 +576,12 @@ Canis::Vector3 GenerateTerrain::GetStreamingFocusPosition() const
     return Canis::Vector3(0.0f);
 }
 
-void GenerateTerrain::PopulateChunk(VoxelTerrainChunk &_chunk, int _chunkX, int _chunkZ) const
+std::vector<unsigned char> GenerateTerrain::GenerateChunkBlocks(int _chunkX, int _chunkZ) const
 {
-    _chunk.Resize(chunkSize, chunkHeight, chunkSize);
-
-    for (int localZ = 0; localZ < chunkSize; ++localZ)
-    {
-        for (int localX = 0; localX < chunkSize; ++localX)
-        {
-            const int globalX = (_chunkX * chunkSize) + localX;
-            const int globalZ = (_chunkZ * chunkSize) + localZ;
-            const int columnHeight = std::min(chunkHeight, GetTerrainHeight(*this, globalX, globalZ));
-
-            for (int y = 0; y < columnHeight; ++y)
-            {
-                const TerrainBlockType blockType = GetTerrainBlockType(*this, globalX, y, globalZ, columnHeight);
-                if (blockType != TerrainBlockType::Air)
-                    _chunk.SetBlock(localX, y, localZ, blockType);
-            }
-        }
-    }
+    return BuildChunkBlocks(MakeChunkBuildSettings(*this), _chunkX, _chunkZ);
 }
 
-Canis::Entity* GenerateTerrain::CreateChunkEntity(int _chunkX, int _chunkZ)
+Canis::Entity* GenerateTerrain::CreateChunkEntity(int _chunkX, int _chunkZ, std::vector<unsigned char>&& _blocks)
 {
     Canis::Entity *chunkEntity = entity.scene.CreateEntity(
         "TerrainChunk_" + std::to_string(_chunkX) + "_" + std::to_string(_chunkZ));
@@ -555,13 +625,102 @@ Canis::Entity* GenerateTerrain::CreateChunkEntity(int _chunkX, int _chunkZ)
     chunk->iceDropPrefab = iceDropPrefab;
     chunk->goldDropPrefab = goldDropPrefab;
     chunk->uraniumDropPrefab = uraniumDropPrefab;
-
-    PopulateChunk(*chunk, _chunkX, _chunkZ);
+    chunk->blocks = std::move(_blocks);
+    if (chunk->blocks.empty())
+        chunk->Resize(chunkSize, chunkHeight, chunkSize);
     chunk->RebuildMesh();
     return chunkEntity;
 }
 
-void GenerateTerrain::RefreshLoadedChunks(bool _forceRefresh)
+void GenerateTerrain::QueueChunkRequest(int _chunkX, int _chunkZ)
+{
+    const std::uint64_t chunkKey = MakeChunkKey(_chunkX, _chunkZ);
+    if (m_loadedChunkEntities.find(chunkKey) != m_loadedChunkEntities.end())
+        return;
+    if (m_pendingChunkKeys.find(chunkKey) != m_pendingChunkKeys.end())
+        return;
+    if (m_queuedChunkKeys.find(chunkKey) != m_queuedChunkKeys.end())
+        return;
+
+    m_queuedChunkRequests.emplace_back(_chunkX, _chunkZ);
+    m_queuedChunkKeys.insert(chunkKey);
+}
+
+void GenerateTerrain::LaunchQueuedChunkJobs()
+{
+    const unsigned int maxConcurrentJobs = GetMaxConcurrentChunkJobs();
+    while (m_pendingChunkJobs.size() < maxConcurrentJobs && !m_queuedChunkRequests.empty())
+    {
+        const std::pair<int, int> chunkCoords = m_queuedChunkRequests.front();
+        m_queuedChunkRequests.pop_front();
+
+        const int chunkX = chunkCoords.first;
+        const int chunkZ = chunkCoords.second;
+        const std::uint64_t chunkKey = MakeChunkKey(chunkX, chunkZ);
+        m_queuedChunkKeys.erase(chunkKey);
+
+        if (m_desiredChunkKeys.find(chunkKey) == m_desiredChunkKeys.end())
+            continue;
+
+        const ChunkBuildSettings settings = MakeChunkBuildSettings(*this);
+        PendingChunkJob job = {};
+        job.chunkKey = chunkKey;
+        job.chunkX = chunkX;
+        job.chunkZ = chunkZ;
+        job.future = std::async(std::launch::async, [settings, chunkX, chunkZ]() -> std::vector<unsigned char>
+        {
+            return BuildChunkBlocks(settings, chunkX, chunkZ);
+        });
+
+        m_pendingChunkKeys.insert(chunkKey);
+        m_pendingChunkJobs.push_back(std::move(job));
+    }
+}
+
+void GenerateTerrain::FinalizePendingChunkJobs()
+{
+    std::size_t finalizedThisFrame = 0u;
+    for (std::size_t i = 0; i < m_pendingChunkJobs.size() && finalizedThisFrame < kMaxChunkFinalizationsPerUpdate;)
+    {
+        PendingChunkJob& job = m_pendingChunkJobs[i];
+        if (!job.future.valid() ||
+            job.future.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+        {
+            ++i;
+            continue;
+        }
+
+        std::vector<unsigned char> blocks = job.future.get();
+        m_pendingChunkKeys.erase(job.chunkKey);
+
+        if (m_generated &&
+            m_desiredChunkKeys.find(job.chunkKey) != m_desiredChunkKeys.end() &&
+            m_loadedChunkEntities.find(job.chunkKey) == m_loadedChunkEntities.end())
+        {
+            if (Canis::Entity* chunkEntity = CreateChunkEntity(job.chunkX, job.chunkZ, std::move(blocks)))
+                m_loadedChunkEntities[job.chunkKey] = chunkEntity->id;
+        }
+
+        m_pendingChunkJobs.erase(m_pendingChunkJobs.begin() + static_cast<std::ptrdiff_t>(i));
+        ++finalizedThisFrame;
+    }
+}
+
+void GenerateTerrain::WaitForPendingChunkJobs()
+{
+    for (PendingChunkJob& job : m_pendingChunkJobs)
+    {
+        if (job.future.valid())
+            job.future.wait();
+    }
+
+    m_pendingChunkJobs.clear();
+    m_pendingChunkKeys.clear();
+    m_queuedChunkRequests.clear();
+    m_queuedChunkKeys.clear();
+}
+
+void GenerateTerrain::RefreshLoadedChunks(bool _forceRefresh, bool _loadMissingAsync)
 {
     if (!entity.HasComponent<Canis::Transform>())
         return;
@@ -596,11 +755,37 @@ void GenerateTerrain::RefreshLoadedChunks(bool _forceRefresh)
 
             if (m_loadedChunkEntities.find(chunkKey) != m_loadedChunkEntities.end())
                 continue;
+            if (m_pendingChunkKeys.find(chunkKey) != m_pendingChunkKeys.end())
+                continue;
+            if (m_queuedChunkKeys.find(chunkKey) != m_queuedChunkKeys.end())
+                continue;
 
-            if (Canis::Entity *chunkEntity = CreateChunkEntity(chunkX, chunkZ))
-                m_loadedChunkEntities[chunkKey] = chunkEntity->id;
+            if (_loadMissingAsync)
+            {
+                QueueChunkRequest(chunkX, chunkZ);
+            }
+            else
+            {
+                if (Canis::Entity *chunkEntity = CreateChunkEntity(chunkX, chunkZ, GenerateChunkBlocks(chunkX, chunkZ)))
+                    m_loadedChunkEntities[chunkKey] = chunkEntity->id;
+            }
         }
     }
+
+    m_desiredChunkKeys = desiredChunkKeys;
+
+    std::deque<std::pair<int, int>> filteredQueuedRequests = {};
+    while (!m_queuedChunkRequests.empty())
+    {
+        const std::pair<int, int> request = m_queuedChunkRequests.front();
+        m_queuedChunkRequests.pop_front();
+        const std::uint64_t requestKey = MakeChunkKey(request.first, request.second);
+        if (desiredChunkKeys.find(requestKey) != desiredChunkKeys.end())
+            filteredQueuedRequests.push_back(request);
+        else
+            m_queuedChunkKeys.erase(requestKey);
+    }
+    m_queuedChunkRequests.swap(filteredQueuedRequests);
 
     std::vector<std::uint64_t> keysToUnload = {};
     keysToUnload.reserve(m_loadedChunkEntities.size());
@@ -642,18 +827,26 @@ void GenerateTerrain::Ready()
     bedrockLayerHeight = std::clamp(bedrockLayerHeight, 0, chunkHeight);
     surfaceIceHeight = std::max(1, surfaceIceHeight);
     m_loadedChunkEntities.clear();
+    m_desiredChunkKeys.clear();
+    m_queuedChunkKeys.clear();
+    m_pendingChunkKeys.clear();
+    m_queuedChunkRequests.clear();
+    m_pendingChunkJobs.clear();
     m_lastCenterChunkX = std::numeric_limits<int>::max();
     m_lastCenterChunkZ = std::numeric_limits<int>::max();
 
     CacheMaterials();
     EnsurePlayerEntity();
-    RefreshLoadedChunks(true);
+    RefreshLoadedChunks(true, false);
 
     m_generated = true;
 }
 
 void GenerateTerrain::Destroy()
 {
+    m_generated = false;
+    WaitForPendingChunkJobs();
+
     for (const auto &[chunkKey, entityId] : m_loadedChunkEntities)
     {
         (void)chunkKey;
@@ -662,10 +855,10 @@ void GenerateTerrain::Destroy()
     }
 
     m_loadedChunkEntities.clear();
+    m_desiredChunkKeys.clear();
     m_playerEntity = nullptr;
     m_lastCenterChunkX = std::numeric_limits<int>::max();
     m_lastCenterChunkZ = std::numeric_limits<int>::max();
-    m_generated = false;
 }
 
 void GenerateTerrain::Update(float _dt)
@@ -675,5 +868,7 @@ void GenerateTerrain::Update(float _dt)
     if (!m_generated)
         return;
 
-    RefreshLoadedChunks(false);
+    FinalizePendingChunkJobs();
+    RefreshLoadedChunks(false, true);
+    LaunchQueuedChunkJobs();
 }

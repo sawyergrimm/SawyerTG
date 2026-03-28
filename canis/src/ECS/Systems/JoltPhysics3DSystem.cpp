@@ -223,7 +223,6 @@ namespace Canis
 
         JPH::EAllowedDOFs BuildAllowedDOFs(const Rigidbody &_rigidbody)
         {
-            (void)_rigidbody;
             return JPH::EAllowedDOFs::All;
         }
 

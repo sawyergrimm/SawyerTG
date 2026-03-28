@@ -172,7 +172,6 @@ namespace Canis
 	void OpenInVSCode(const std::string& _filePath)
 	{
 	#if defined(__EMSCRIPTEN__)
-		(void)_filePath;
 		Debug::Warning("OpenInVSCode is unavailable in web builds.");
 	#else
 	#if defined(_WIN32)
