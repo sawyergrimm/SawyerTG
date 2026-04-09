@@ -13,6 +13,7 @@ namespace SuperPupUtilities
     {
     public:
         explicit State(std::string _name);
+        State(std::string _name, StateMachine& _stateMachine);
         virtual ~State() = default;
 
         const std::string& GetName() const;
@@ -22,7 +23,7 @@ namespace SuperPupUtilities
         virtual void Update(float _dt) = 0;
         virtual void Exit() {}
 
-    private:
+    protected:
         friend class StateMachine;
 
         std::string m_name = "";

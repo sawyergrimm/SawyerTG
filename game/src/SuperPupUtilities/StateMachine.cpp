@@ -9,6 +9,10 @@ namespace SuperPupUtilities
 {
     State::State(std::string _name) : m_name(std::move(_name)) {}
 
+    State::State(std::string _name, StateMachine& _stateMachine) :
+        m_name(std::move(_name)),
+        m_stateMachine(&_stateMachine) {}
+
     StateMachine::StateMachine(Canis::Entity& _entity) :
         Canis::ScriptableEntity(_entity) {}
 

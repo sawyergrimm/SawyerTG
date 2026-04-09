@@ -15,39 +15,36 @@ namespace AICombat
     public:
         static constexpr const char* Name = "IdleState";
 
-        explicit IdleState(BrawlerStateMachine& _owner);
+        explicit IdleState(SuperPupUtilities::StateMachine& _stateMachine);
         void Enter() override;
         void Update(float _dt) override;
-
-    private:
-        BrawlerStateMachine& m_owner;
     };
 
     class ChaseState : public SuperPupUtilities::State
     {
     public:
         static constexpr const char* Name = "ChaseState";
+        float moveSpeed = 4.0f;
 
-        explicit ChaseState(BrawlerStateMachine& _owner);
+        explicit ChaseState(SuperPupUtilities::StateMachine& _stateMachine);
         void Enter() override;
         void Update(float _dt) override;
-
-    private:
-        BrawlerStateMachine& m_owner;
     };
 
     class HammerTimeState : public SuperPupUtilities::State
     {
     public:
         static constexpr const char* Name = "HammerTimeState";
+        float hammerRestDegrees = 140.0f;
+        float hammerSwingDegrees = -120.0f;
+        float attackRange = 2.25f;
+        float attackDuration = 0.75f;
+        float attackDamageTime = 0.25f;
 
-        explicit HammerTimeState(BrawlerStateMachine& _owner);
+        explicit HammerTimeState(SuperPupUtilities::StateMachine& _stateMachine);
         void Enter() override;
         void Update(float _dt) override;
         void Exit() override;
-
-    private:
-        BrawlerStateMachine& m_owner;
     };
 
     class BrawlerStateMachine : public SuperPupUtilities::StateMachine
@@ -57,20 +54,16 @@ namespace AICombat
 
         std::string targetTag = "";
         float detectionRange = 20.0f;
-        float moveSpeed = 4.0f;
-        float attackRange = 2.25f;
-        float attackDuration = 0.75f;
-        float attackDamageTime = 0.25f;
-        int attackDamage = 10;
+        Canis::Vector3 bodyColliderSize = Canis::Vector3(1.0f);
         int maxHealth = 40;
         bool logStateChanges = true;
         Canis::Entity* hammerVisual = nullptr;
-        Canis::AudioAssetHandle hitSFX = {};
-        float hitVolume = 0.35f;
-        Canis::AudioAssetHandle defeatSFX = {};
-        float defeatVolume = 0.55f;
 
         explicit BrawlerStateMachine(Canis::Entity& _entity);
+
+        IdleState idleState;
+        ChaseState chaseState;
+        HammerTimeState hammerTimeState;
 
         void Create() override;
         void Ready() override;
@@ -80,29 +73,21 @@ namespace AICombat
         Canis::Entity* FindClosestTarget() const;
         float DistanceTo(const Canis::Entity& _other) const;
         void FaceTarget(const Canis::Entity& _target);
-        void MoveTowards(const Canis::Entity& _target, float _dt);
+        void MoveTowards(const Canis::Entity& _target, float _speed, float _dt);
         void ChangeState(const std::string& _stateName);
         const std::string& GetCurrentStateName() const;
+        float GetStateTime() const;
+        float GetAttackRange() const;
         int GetCurrentHealth() const;
 
         void ResetHammerPose();
         void SetHammerSwing(float _normalized);
-        void ApplyAttackDamage();
         void TakeDamage(int _damage);
         bool IsAlive() const;
 
     private:
-        friend class IdleState;
-        friend class ChaseState;
-        friend class HammerTimeState;
-
-        IdleState m_idleState;
-        ChaseState m_chaseState;
-        HammerTimeState m_hammerTimeState;
-
         int m_currentHealth = 0;
         float m_stateTime = 0.0f;
-        bool m_attackDamageApplied = false;
         Canis::Vector4 m_baseColor = Canis::Vector4(1.0f);
         bool m_hasBaseColor = false;
     };
