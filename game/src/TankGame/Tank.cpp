@@ -16,7 +16,6 @@ using namespace Canis;
 
 namespace TankGame
 {
-
     ScriptConf tankConf = {};
 
     void RegisterTankScript(Canis::App &_app)
@@ -137,7 +136,7 @@ namespace TankGame
         if (entity.scene.GetInputManager().GetLeftClick())
         {
             m_time = coolDownTime;
-            
+
             Canis::Entity* bulletEntity = entity.scene.CreateEntity("Bullet");
             RectTransform& bulletTransform = *bulletEntity->AddComponent<RectTransform>();
             Sprite2D& bulletSprite = *bulletEntity->AddComponent<Sprite2D>();

@@ -120,21 +120,12 @@ namespace RollABall
         const float yaw = std::atan2(-flatDirection.x, -flatDirection.z);
         const Canis::Vector3 rotation = Canis::Vector3(0.0f, yaw, 0.0f);
 
-        std::vector<Canis::Entity*> laserInstance = entity.scene.Instantiate(laserPrefab);
+        auto* pool = SuperPupUtilities::SimpleObjectPool::GetInstance();
 
-        Canis::Entity* projectile = nullptr;
+        if (pool == nullptr)
+            return;
 
-        if (laserInstance.size() > 0)
-        {
-            projectile = laserInstance[0];
-
-            if (projectile->HasComponent<Transform>())
-            {
-                Transform& transform = projectile->GetComponent<Transform>();
-                transform.position = _position;
-                transform.rotation = rotation;
-            }
-        }
+        Canis::Entity* projectile = pool->SpawnFromPool("laser_bullet", _position, rotation);
 
         if (projectile == nullptr)
             return;

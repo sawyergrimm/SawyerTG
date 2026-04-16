@@ -24,7 +24,7 @@ namespace SuperPupUtilities
             return;
         }
 
-        if (s_instance != this && logWarnings)
+        if (s_instance != this)
             Canis::Debug::Warning("SimpleObjectPool: multiple pool instances found. Only the first instance will be used.");
     }
 
