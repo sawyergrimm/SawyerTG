@@ -1,14 +1,14 @@
 #pragma once
 
 #include <Canis/Entity.hpp>
-#include <AICombat/Health.hpp>
-#include <SuperPupUtilities/StateMachine.hpp>
 
+#include <SuperPupUtilities/StateMachine.hpp>
+#include <AICombat/Health.hpp>
 #include <string>
 
-namespace AICombat
+namespace Healer
 {
-    class BrawlerStateMachine;
+    class HealerStateMachine;
 
     class IdleState : public SuperPupUtilities::State
     {
@@ -31,44 +31,41 @@ namespace AICombat
         void Update(float _dt) override;
     };
 
-    class HammerTimeState : public SuperPupUtilities::State
+    class HealState : public SuperPupUtilities::State
     {
     public:
-        static constexpr const char* Name = "HammerTimeState";
-        float hammerRestDegrees = 140.0f;
-        float hammerSwingDegrees = -120.0f;
-        float attackRange = 2.25f;
-        float attackDuration = 0.75f;
-        float attackDamageTime = 0.25f;
+        static constexpr const char* Name = "HealState";
+        float healRange = 2.00f;
+        float healTime = 0.75f;
+        float healAmmount = 0.25f;
 
-        explicit HammerTimeState(SuperPupUtilities::StateMachine& _stateMachine);
+        explicit HealState(SuperPupUtilities::StateMachine& _stateMachine);
         void Enter() override;
         void Update(float _dt) override;
         void Exit() override;
     };
 
-    class BrawlerStateMachine : public SuperPupUtilities::StateMachine
+    class HealerStateMachine : public SuperPupUtilities::StateMachine
     {
     public:
-        static constexpr const char* ScriptName = "AICombat::BrawlerStateMachine";
+        static constexpr const char* ScriptName = "Healer::HealerStateMachine";
 
         std::string targetTag = "";
         float detectionRange = 20.0f;
         Canis::Vector3 bodyColliderSize = Canis::Vector3(1.0f);
         int maxHealth = 40;
-        Health healthComponent;
+        AICombat::Health healthComponent;
         bool logStateChanges = true;
-        Canis::Entity* hammerVisual = nullptr;
         Canis::AudioAssetHandle hitSfxPath1 = { .path = "assets/audio/sfx/hit_1.ogg" };
         Canis::AudioAssetHandle hitSfxPath2 = { .path = "assets/audio/sfx/hit_2.ogg" };
         float hitSfxVolume = 1.0f;
-        Canis::SceneAssetHandle deathEffectPrefab = { .path = "assets/prefabs/brawler_death_particles.scene" };
+        Canis::SceneAssetHandle deathEffectPrefab = { .path = "assets/prefabs/Healer_death_particles.scene" };
 
-        explicit BrawlerStateMachine(Canis::Entity& _entity);
+        explicit HealerStateMachine(Canis::Entity& _entity);
 
         IdleState idleState;
         ChaseState chaseState;
-        HammerTimeState hammerTimeState;
+        HealState healState;
 
         void Create() override;
         void Ready() override;
@@ -82,11 +79,9 @@ namespace AICombat
         void ChangeState(const std::string& _stateName);
         const std::string& GetCurrentStateName() const;
         float GetStateTime() const;
-        float GetAttackRange() const;
+        float GetHealRange() const;
         int GetCurrentHealth() const;
 
-        void ResetHammerPose();
-        void SetHammerSwing(float _normalized);
         void TakeDamage(int _damage);
         bool IsAlive() const;
 
@@ -101,6 +96,6 @@ namespace AICombat
         bool m_useFirstHitSfx = true;
     };
 
-    void RegisterBrawlerStateMachineScript(Canis::App& _app);
-    void UnRegisterBrawlerStateMachineScript(Canis::App& _app);
+    void RegisterHealerStateMachineScript(Canis::App& _app);
+    void UnRegisterHealerStateMachineScript(Canis::App& _app);
 }

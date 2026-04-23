@@ -129,8 +129,8 @@ Entities:
     Tag: Blue
     Canis::Transform:
       active: true
-      position: [-4, 1, 0]
-      rotation: [0, 0, 0]
+      position: [-4.000061, 1, 0.06665099]
+      rotation: [0, -0, 0]
       scale: [1, 1, 1]
       parent: 0
       children:
@@ -205,13 +205,13 @@ Entities:
       ModelAsset:
         uuid: 17154083321347000101
   - Entity: 920110
-    Name: Red Brawler
+    Name: Big Red Brawler
     Tag: Red
     Canis::Transform:
       active: true
-      position: [4, 1, 0]
-      rotation: [0, 3.1415927, 0]
-      scale: [1, 1, 1]
+      position: [4.080751, 1, 0.04186987]
+      rotation: [3.1415908, -8.742277e-08, 3.1415908]
+      scale: [1.5, 1.5, 1.5]
       parent: 0
       children:
         - 17922756738381035608
@@ -248,13 +248,13 @@ Entities:
       targetTag: Blue
       detectionRange: 20
       bodyColliderSize: [1, 1, 1]
-      moveSpeed: 3.4
+      moveSpeed: 2.2
       hammerRestDegrees: 140
       hammerSwingDegrees: -120
       attackRange: 2.2
-      attackDuration: 0.75
-      attackDamageTime: 0.24
-      maxHealth: 40
+      attackDuration: 1.55
+      attackDamageTime: 0.34
+      maxHealth: 70
       logStateChanges: true
       hammerVisual: 17922756738381035608
       hitSfxPath1:

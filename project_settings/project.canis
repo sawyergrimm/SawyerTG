@@ -8,10 +8,10 @@ musicVolume: 1
 sfxVolume: 1
 mute: false
 editor: true
-syncMode: 0
+syncMode: -1
 iconUUID: 8708093225096235882
 launchScene: 11030618039459198727
-editorWindowWidth: 2560
-editorWindowHeight: 1514
+editorWindowWidth: 1470
+editorWindowHeight: 891
 targetGameWidth: 512
 targetGameHeight: 512
