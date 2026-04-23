@@ -16,7 +16,7 @@ namespace AICombat
         Canis::Entity* owner = nullptr;
         Canis::Vector3 sensorSize = Canis::Vector3(1.0f);
         int damage = 10;
-        std::string targetTag = "";
+        std::string teamTag = "";
 
         explicit HammerDamage(Canis::Entity& _entity) : Canis::ScriptableEntity(_entity) {}
 

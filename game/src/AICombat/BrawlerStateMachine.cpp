@@ -112,7 +112,7 @@ namespace AICombat
 
     void RegisterBrawlerStateMachineScript(Canis::App& _app)
     {
-        REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, targetTag);
+        REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, teamTag);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, detectionRange);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, bodyColliderSize);
         RegisterAccessorProperty(brawlerStateMachineConf, AICombat::BrawlerStateMachine, chaseState, moveSpeed);
@@ -203,20 +203,17 @@ namespace AICombat
 
     Canis::Entity* BrawlerStateMachine::FindClosestTarget() const
     {
-        if (targetTag.empty() || !entity.HasComponent<Canis::Transform>())
-            return nullptr;
-
         const Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
         const Canis::Vector3 origin = transform.GetGlobalPosition();
         Canis::Entity* closestTarget = nullptr;
         float closestDistance = detectionRange;
 
-        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag(targetTag))
+        for (Canis::Entity* candidate : entity.scene.GetEntities())
         {
-            if (candidate == nullptr || candidate == &entity || !candidate->active)
+            if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag == teamTag)
                 continue;
 
-            if (!candidate->HasComponent<Canis::Transform>())
+            if (!candidate->HasComponent<AICombat::Health>())
                 continue;
 
             if (const BrawlerStateMachine* other = candidate->GetScript<BrawlerStateMachine>())

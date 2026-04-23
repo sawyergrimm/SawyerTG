@@ -185,6 +185,7 @@ Entities:
         path: assets/audio/sfx/hit_2.ogg
       hitSfxVolume: 0.1
       deathEffectPrefab: 1932126691914227009
+    AICombat::Health: ~
   - Entity: 920101
     Name: Blue Hammer Handle
     Tag: ""
@@ -265,6 +266,7 @@ Entities:
         path: assets/audio/sfx/hit_2.ogg
       hitSfxVolume: 0.1
       deathEffectPrefab: 1932126691914227009
+    AICombat::Health: ~
   - Entity: 17922756738381035608
     Name: Right Hand Root
     Tag: ""

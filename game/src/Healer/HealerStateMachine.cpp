@@ -110,7 +110,7 @@ namespace Healer
 
     void RegisterHealerStateMachineScript(Canis::App& _app)
     {
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, targetTag);
+        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, teamTag);
         REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, detectionRange);
         REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, bodyColliderSize);
         RegisterAccessorProperty(healerStateMachineConf, Healer::HealerStateMachine, chaseState, moveSpeed);
@@ -197,7 +197,7 @@ namespace Healer
 
     Canis::Entity* HealerStateMachine::FindClosestTarget() const
     {
-        if (targetTag.empty() || !entity.HasComponent<Canis::Transform>())
+        if (teamTag.empty() || !entity.HasComponent<Canis::Transform>())
             return nullptr;
 
         const Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
@@ -206,7 +206,7 @@ namespace Healer
         float closestDistance = detectionRange;
         float lowestHealth = 255.0f;
 
-        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag(targetTag))
+        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag(teamTag))
         {
             if (candidate == nullptr || candidate == &entity || !candidate->active)
                 continue;

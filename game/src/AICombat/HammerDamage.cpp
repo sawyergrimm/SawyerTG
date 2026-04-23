@@ -19,7 +19,7 @@ namespace AICombat
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, owner);
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, sensorSize);
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, damage);
-        REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, targetTag);
+        REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, teamTag);
 
         DEFAULT_CONFIG_AND_REQUIRED(
             hammerDamageConf,
@@ -55,10 +55,10 @@ namespace AICombat
         if (owner == nullptr)
             owner = FindOwnerFromHierarchy();
 
-        if (targetTag.empty())
+        if (teamTag.empty())
         {
             if (BrawlerStateMachine* ownerStateMachine = GetOwnerStateMachine())
-                targetTag = ownerStateMachine->targetTag;
+                teamTag = ownerStateMachine->teamTag;
         }
     }
 
@@ -98,7 +98,7 @@ namespace AICombat
             if (targetStateMachine == nullptr || !targetStateMachine->IsAlive())
                 continue;
 
-            if (other->tag != targetTag)
+            if (other->tag != teamTag)
                 continue;
 
             targetStateMachine->TakeDamage(damage);
