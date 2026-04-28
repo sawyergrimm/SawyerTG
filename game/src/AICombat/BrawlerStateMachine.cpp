@@ -219,9 +219,9 @@ namespace AICombat
         float closestDistance = detectionRange;
         float lowestHealth = 255.0f;
 
-        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag(teamTag))
+        for (Canis::Entity* candidate : entity.scene.GetEntities())
         {
-            if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag != teamTag) {
+            if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag == teamTag) {
                 continue;
             }
 
