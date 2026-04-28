@@ -98,7 +98,7 @@ namespace AICombat
             if (targetStateMachine == nullptr || !targetStateMachine->IsAlive())
                 continue;
 
-            if (other->tag != teamTag)
+            if (other->tag == teamTag)
                 continue;
 
             targetStateMachine->TakeDamage(damage);

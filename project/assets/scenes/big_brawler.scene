@@ -165,7 +165,7 @@ Entities:
       ModelAsset:
         uuid: 17154083321347000101
     AICombat::BrawlerStateMachine:
-      targetTag: Red
+      teamTag: Blue
       detectionRange: 20
       bodyColliderSize: [1, 1, 1]
       moveSpeed: 3.4
@@ -246,7 +246,7 @@ Entities:
       ModelAsset:
         uuid: 17154083321347000101
     AICombat::BrawlerStateMachine:
-      targetTag: Blue
+      teamTag: Red
       detectionRange: 20
       bodyColliderSize: [1, 1, 1]
       moveSpeed: 2.2
@@ -335,7 +335,7 @@ Entities:
       owner: 0
       sensorSize: [1, 1, 1]
       damage: 10
-      targetTag: Red
+      teamTag: ""
   - Entity: 12545027224714017549
     Name: Red Hammer Handle
     Tag: ""
@@ -399,4 +399,4 @@ Entities:
       owner: 0
       sensorSize: [1, 1, 1]
       damage: 10
-      targetTag: Blue
+      teamTag: ""

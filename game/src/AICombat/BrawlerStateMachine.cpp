@@ -30,7 +30,14 @@ namespace AICombat
         if (BrawlerStateMachine* brawlerStatMachine = dynamic_cast<BrawlerStateMachine*>(m_stateMachine))
         {
             if (brawlerStatMachine->FindClosestTarget() != nullptr)
+            {
+                Canis::Debug::Log("Found a target");
                 brawlerStatMachine->ChangeState(ChaseState::Name);
+            }
+            else
+            {
+                Canis::Debug::Log("NO TARGETS");
+            }
         }
     }
 
@@ -203,30 +210,38 @@ namespace AICombat
 
     Canis::Entity* BrawlerStateMachine::FindClosestTarget() const
     {
+        if (!entity.HasComponent<Canis::Transform>())
+            return nullptr;
+
         const Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
         const Canis::Vector3 origin = transform.GetGlobalPosition();
         Canis::Entity* closestTarget = nullptr;
         float closestDistance = detectionRange;
+        float lowestHealth = 255.0f;
 
-        for (Canis::Entity* candidate : entity.scene.GetEntities())
+        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag(teamTag))
         {
-            if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag == teamTag)
+            if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag != teamTag) {
                 continue;
+            }
 
-            if (!candidate->HasComponent<AICombat::Health>())
+            if (!candidate->HasComponent<Canis::Transform>() || !candidate->HasComponent<AICombat::Health>()) {
                 continue;
+            }
 
-            if (const BrawlerStateMachine* other = candidate->GetScript<BrawlerStateMachine>())
+            if (const AICombat::Health* other = candidate->GetScript<AICombat::Health>())
             {
-                if (!other->IsAlive())
+                if (other->currentHealth <= 0) {
                     continue;
+                }
             }
 
             const Canis::Vector3 candidatePosition = candidate->GetComponent<Canis::Transform>().GetGlobalPosition();
             const float distance = glm::distance(origin, candidatePosition);
 
-            if (distance > detectionRange || distance >= closestDistance)
+            if (distance > detectionRange || distance >= closestDistance) {
                 continue;
+            }
 
             closestDistance = distance;
             closestTarget = candidate;
@@ -337,7 +352,6 @@ namespace AICombat
     {
         if (!IsAlive())
             return;
-
         const int damageToApply = std::max(_damage, 0);
         if (damageToApply <= 0)
             return;

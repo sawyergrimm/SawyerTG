@@ -197,7 +197,7 @@ namespace Healer
 
     Canis::Entity* HealerStateMachine::FindClosestTarget() const
     {
-        if (teamTag.empty() || !entity.HasComponent<Canis::Transform>())
+        if (!entity.HasComponent<Canis::Transform>())
             return nullptr;
 
         const Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
@@ -208,23 +208,27 @@ namespace Healer
 
         for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag(teamTag))
         {
-            if (candidate == nullptr || candidate == &entity || !candidate->active)
+            if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag != teamTag) {
                 continue;
+            }
 
-            if (!candidate->HasComponent<Canis::Transform>())
+            if (!candidate->HasComponent<Canis::Transform>() || !candidate->HasComponent<AICombat::Health>()) {
                 continue;
+            }
 
-            if (const HealerStateMachine* other = candidate->GetScript<HealerStateMachine>())
+            if (const AICombat::Health* other = candidate->GetScript<AICombat::Health>())
             {
-                if (!other->IsAlive())
+                if (other->currentHealth <= 0) {
                     continue;
+                }
             }
 
             const Canis::Vector3 candidatePosition = candidate->GetComponent<Canis::Transform>().GetGlobalPosition();
             const float distance = glm::distance(origin, candidatePosition);
 
-            if (distance > detectionRange || distance >= closestDistance)
+            if (distance > detectionRange || distance >= closestDistance) {
                 continue;
+            }
 
             closestDistance = distance;
             closestTarget = candidate;
