@@ -51,6 +51,7 @@ namespace Healer
         static constexpr const char* ScriptName = "Healer::HealerStateMachine";
 
         std::string teamTag = "";
+        std::string team = "";
         float detectionRange = 20.0f;
         Canis::Vector3 bodyColliderSize = Canis::Vector3(1.0f);
         int maxHealth = 40;
@@ -84,6 +85,7 @@ namespace Healer
 
         void TakeDamage(int _damage);
         bool IsAlive() const;
+        void ReportHealth();
 
     private:
         void PlayHitSfx();

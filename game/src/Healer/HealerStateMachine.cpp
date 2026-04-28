@@ -30,6 +30,7 @@ namespace Healer
     {
         if (HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine))
         {
+            healerStatMachine->ReportHealth();
             if (healerStatMachine->FindClosestTarget() != nullptr)
                 healerStatMachine->ChangeState(ChaseState::Name);
         }
@@ -110,7 +111,6 @@ namespace Healer
 
     void RegisterHealerStateMachineScript(Canis::App& _app)
     {
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, teamTag);
         REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, detectionRange);
         REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, bodyColliderSize);
         RegisterAccessorProperty(healerStateMachineConf, Healer::HealerStateMachine, chaseState, moveSpeed);
@@ -169,7 +169,8 @@ namespace Healer
             m_hasBaseColor = true;
         }
 
-        healthComponent.currentHealth = std::max(maxHealth, 1);
+        entity.GetComponent<AICombat::Health>().currentHealth = maxHealth;
+        Canis::Debug::Log("Healer Ready Health: %d", healthComponent.currentHealth);
         m_stateTime = 0.0f;
         m_useFirstHitSfx = true;
 
@@ -206,7 +207,7 @@ namespace Healer
         float closestDistance = detectionRange;
         float lowestHealth = 255.0f;
 
-        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag(teamTag))
+        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag("StateMachine"))
         {
             if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag != teamTag) {
                 continue;
@@ -386,5 +387,8 @@ namespace Healer
     bool HealerStateMachine::IsAlive() const
     {
         return healthComponent.currentHealth > 0;
+    }
+
+    void HealerStateMachine::ReportHealth() {
     }
 }

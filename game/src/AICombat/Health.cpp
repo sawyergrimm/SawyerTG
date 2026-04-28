@@ -13,6 +13,7 @@ namespace AICombat
     void RegisterHealthComponent(Canis::App& _app)
     {
         // REGISTER_PROPERTY(componentConf, AICombat::Health, exampleProperty);
+        REGISTER_PROPERTY(componentConf, AICombat::Health, currentHealth);
 
         DEFAULT_COMPONENT_CONFIG(componentConf, AICombat::Health);
 

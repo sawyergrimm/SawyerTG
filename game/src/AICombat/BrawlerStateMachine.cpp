@@ -31,12 +31,10 @@ namespace AICombat
         {
             if (brawlerStatMachine->FindClosestTarget() != nullptr)
             {
-                Canis::Debug::Log("Found a target");
                 brawlerStatMachine->ChangeState(ChaseState::Name);
             }
             else
             {
-                Canis::Debug::Log("NO TARGETS");
             }
         }
     }
@@ -90,15 +88,18 @@ namespace AICombat
         if (brawlerStatMachine == nullptr)
             return;
 
-        if (Canis::Entity* target = brawlerStatMachine->FindClosestTarget())
+        if (Canis::Entity* target = brawlerStatMachine->FindClosestTarget()) {
             brawlerStatMachine->FaceTarget(*target);
+        }
 
         const float duration = std::max(attackDuration, 0.001f);
         brawlerStatMachine->SetHammerSwing(brawlerStatMachine->GetStateTime() / duration);
 
         if (brawlerStatMachine->GetStateTime() < duration)
             return;
+        Canis::Debug::Log("We made it to here");
 
+        
         if (brawlerStatMachine->FindClosestTarget() != nullptr)
             brawlerStatMachine->ChangeState(ChaseState::Name);
         else
@@ -119,7 +120,6 @@ namespace AICombat
 
     void RegisterBrawlerStateMachineScript(Canis::App& _app)
     {
-        REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, teamTag);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, detectionRange);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, bodyColliderSize);
         RegisterAccessorProperty(brawlerStateMachineConf, AICombat::BrawlerStateMachine, chaseState, moveSpeed);
@@ -162,7 +162,6 @@ namespace AICombat
         rigidbody.allowSleeping = false;
         rigidbody.linearVelocity = Canis::Vector3(0.0f);
         rigidbody.angularVelocity = Canis::Vector3(0.0f);
-        healthComponent.currentHealth = maxHealth;
         entity.GetComponent<Canis::BoxCollider>().size = bodyColliderSize;
 
         if (entity.HasComponent<Canis::Material>())
@@ -180,7 +179,7 @@ namespace AICombat
             m_hasBaseColor = true;
         }
 
-        healthComponent.currentHealth = std::max(maxHealth, 1);
+        healthComponent.currentHealth =  maxHealth;
         m_stateTime = 0.0f;
         m_useFirstHitSfx = true;
 
@@ -219,13 +218,18 @@ namespace AICombat
         float closestDistance = detectionRange;
         float lowestHealth = 255.0f;
 
-        for (Canis::Entity* candidate : entity.scene.GetEntities())
+        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag("StateMachine"))
         {
-            if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag == teamTag) {
+            if (candidate == nullptr || candidate == &entity || !candidate->active || !candidate->HasComponent<AICombat::Health>()) {
                 continue;
             }
 
-            if (!candidate->HasComponent<Canis::Transform>() || !candidate->HasComponent<AICombat::Health>()) {
+
+            if (!candidate->HasComponent<Canis::Transform>()) {
+                continue;
+            }
+
+            if (candidate->GetComponent<AICombat::Team>().team == entity.GetComponent<AICombat::Team>().team) {
                 continue;
             }
 
@@ -337,7 +341,6 @@ namespace AICombat
     {
         if (hammerVisual == nullptr || !hammerVisual->HasComponent<Canis::Transform>())
             return;
-
         Canis::Transform& hammerTransform = hammerVisual->GetComponent<Canis::Transform>();
         const float normalized = Clamp01(_normalized);
         const float swingBlend = (normalized <= 0.5f)
@@ -356,7 +359,7 @@ namespace AICombat
         if (damageToApply <= 0)
             return;
 
-        healthComponent.currentHealth = std::max(0, healthComponent.currentHealth - damageToApply);
+        healthComponent.currentHealth = healthComponent.currentHealth - damageToApply;
         PlayHitSfx();
 
         if (m_hasBaseColor && entity.HasComponent<Canis::Material>())
@@ -377,7 +380,6 @@ namespace AICombat
             return;
 
         if (logStateChanges)
-            Canis::Debug::Log("%s was defeated.", entity.name.c_str());
 
         SpawnDeathEffect();
         entity.Destroy();

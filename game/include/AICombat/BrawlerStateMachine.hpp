@@ -2,6 +2,7 @@
 
 #include <Canis/Entity.hpp>
 #include <AICombat/Health.hpp>
+#include <AICombat/Team.hpp>
 #include <SuperPupUtilities/StateMachine.hpp>
 
 #include <string>
@@ -53,6 +54,7 @@ namespace AICombat
         static constexpr const char* ScriptName = "AICombat::BrawlerStateMachine";
 
         std::string teamTag = "";
+        std::string team;
         float detectionRange = 20.0f;
         Canis::Vector3 bodyColliderSize = Canis::Vector3(1.0f);
         int maxHealth = 40;

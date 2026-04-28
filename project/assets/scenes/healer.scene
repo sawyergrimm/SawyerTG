@@ -126,7 +126,7 @@ Entities:
         uuid: 17154083321347000101
   - Entity: 920100
     Name: Red Brawler
-    Tag: Red
+    Tag: StateMachine
     Canis::Transform:
       active: true
       position: [-4.000061, 1, 0.06665099]
@@ -165,7 +165,6 @@ Entities:
       ModelAsset:
         uuid: 17154083321347000101
     AICombat::BrawlerStateMachine:
-      teamTag: Red
       detectionRange: 20
       bodyColliderSize: [1, 1, 1]
       moveSpeed: 4
@@ -176,7 +175,7 @@ Entities:
       attackDamageTime: 0.25
       maxHealth: 40
       logStateChanges: true
-      hammerVisual: 0
+      hammerVisual: 11979571633178964622
       hitSfxPath1:
         uuid: 9101673412543458587
         path: assets/audio/sfx/hit_1.ogg
@@ -185,7 +184,10 @@ Entities:
         path: assets/audio/sfx/hit_2.ogg
       hitSfxVolume: 1
       deathEffectPrefab: 1932126691914227009
-    AICombat::Health: ~
+    AICombat::Health:
+      currentHealth: 0
+    AICombat::Team:
+      team: Red
   - Entity: 920101
     Name: Blue Hammer Handle
     Tag: ""
@@ -207,7 +209,7 @@ Entities:
         uuid: 17154083321347000101
   - Entity: 920110
     Name: Healer
-    Tag: Red
+    Tag: StateMachine
     Canis::Transform:
       active: true
       position: [4.080751, 1, 0.04186987]
@@ -245,9 +247,11 @@ Entities:
       color: [0.30086, 0.49019605, 0.15138407, 1]
       ModelAsset:
         uuid: 17154083321347000101
-    AICombat::Health: ~
+    AICombat::Health:
+      currentHealth: 0
+    AICombat::Team:
+      team: Green
     Healer::HealerStateMachine:
-      teamTag: Green
       detectionRange: 20
       bodyColliderSize: [1, 1, 1]
       moveSpeed: 4
@@ -331,7 +335,8 @@ Entities:
       owner: 0
       sensorSize: [1, 1, 1]
       damage: 10
-      teamTag: ""
+    AICombat::Team:
+      team: Red
   - Entity: 12545027224714017549
     Name: Healing Want
     Tag: ""

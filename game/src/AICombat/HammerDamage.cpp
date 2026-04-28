@@ -4,7 +4,7 @@
 
 #include <Canis/App.hpp>
 #include <Canis/ConfigHelper.hpp>
-
+#include <Canis/Debug.hpp>
 #include <algorithm>
 
 namespace AICombat
@@ -19,7 +19,6 @@ namespace AICombat
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, owner);
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, sensorSize);
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, damage);
-        REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, teamTag);
 
         DEFAULT_CONFIG_AND_REQUIRED(
             hammerDamageConf,
@@ -55,11 +54,8 @@ namespace AICombat
         if (owner == nullptr)
             owner = FindOwnerFromHierarchy();
 
-        if (teamTag.empty())
-        {
-            if (BrawlerStateMachine* ownerStateMachine = GetOwnerStateMachine())
-                teamTag = ownerStateMachine->teamTag;
-        }
+        static AICombat::Team teamComponent = entity.GetComponent<AICombat::Team>();
+        teamComponent.team = owner->GetComponent<AICombat::Team>().team;
     }
 
     void HammerDamage::Update(float)
@@ -88,21 +84,20 @@ namespace AICombat
             m_hitTargetsThisSwing.clear();
             return;
         }
-
         for (Canis::Entity* other : entity.GetComponent<Canis::BoxCollider>().entered)
         {
             if (other == nullptr || !other->active || other == owner || HasDamagedThisSwing(*other))
                 continue;
 
-            BrawlerStateMachine* targetStateMachine = other->GetScript<BrawlerStateMachine>();
-            if (targetStateMachine == nullptr || !targetStateMachine->IsAlive())
+            if (other->GetComponent<AICombat::Health>().currentHealth <= 0)
                 continue;
 
-            if (other->tag == teamTag)
+            if (other->GetComponent<AICombat::Team>().team == entity.GetComponent<AICombat::Team>().team)
                 continue;
 
-            targetStateMachine->TakeDamage(damage);
+            other->GetComponent<AICombat::Health>().currentHealth -= damage;
             m_hitTargetsThisSwing.push_back(other);
+            Canis::Debug::Log("Checkpoint %d", std::to_string(other->GetComponent<AICombat::Health>().currentHealth).c_str());
         }
     }
 
