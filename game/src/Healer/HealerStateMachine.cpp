@@ -31,7 +31,7 @@ namespace Healer
         if (HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine))
         {
             healerStatMachine->ReportHealth();
-            if (healerStatMachine->FindClosestTarget() != nullptr)
+            if (healerStatMachine->FindLowestTarget() != nullptr)
                 healerStatMachine->ChangeState(ChaseState::Name);
         }
     }
@@ -51,7 +51,7 @@ namespace Healer
         if (healerStatMachine == nullptr)
             return;
 
-        Canis::Entity* target = healerStatMachine->FindClosestTarget();
+        Canis::Entity* target = healerStatMachine->FindLowestTarget();
 
         if (target == nullptr)
         {
@@ -85,7 +85,7 @@ namespace Healer
         if (healerStatMachine == nullptr)
             return;
 
-        if (Canis::Entity* target = healerStatMachine->FindClosestTarget())
+        if (Canis::Entity* target = healerStatMachine->FindLowestTarget())
             healerStatMachine->FaceTarget(*target);
 
         const float duration = std::max(healTime, 0.001f);
@@ -93,7 +93,7 @@ namespace Healer
         if (healerStatMachine->GetStateTime() < duration)
             return;
 
-        if (healerStatMachine->FindClosestTarget() != nullptr)
+        if (healerStatMachine->FindLowestTarget() != nullptr)
             healerStatMachine->ChangeState(ChaseState::Name);
         else
             healerStatMachine->ChangeState(IdleState::Name);
@@ -195,20 +195,19 @@ namespace Healer
         SuperPupUtilities::StateMachine::Update(_dt);
     }
 
-    Canis::Entity* HealerStateMachine::FindClosestTarget() const
+    Canis::Entity* HealerStateMachine::FindLowestTarget() const
     {
         if (!entity.HasComponent<Canis::Transform>())
             return nullptr;
 
         const Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
         const Canis::Vector3 origin = transform.GetGlobalPosition();
-        Canis::Entity* closestTarget = nullptr;
-        float closestDistance = detectionRange;
-        float lowestHealth = 255.0f;
+        Canis::Entity* lowestTarget = nullptr;
+        int lowestHealth = 255;
 
         for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag("StateMachine"))
         {
-            if (candidate == nullptr || candidate == &entity || !candidate->active || candidate->tag != teamTag) {
+            if (candidate == nullptr || candidate == &entity || !candidate->active) {
                 continue;
             }
 
@@ -226,15 +225,15 @@ namespace Healer
             const Canis::Vector3 candidatePosition = candidate->GetComponent<Canis::Transform>().GetGlobalPosition();
             const float distance = glm::distance(origin, candidatePosition);
 
-            if (distance > detectionRange || distance >= closestDistance) {
+            if (candidate->GetComponent<AICombat::Health>().currentHealth >= lowestHealth) {
                 continue;
             }
 
-            closestDistance = distance;
-            closestTarget = candidate;
+            lowestHealth = candidate->GetComponent<AICombat::Health>().currentHealth;
+            lowestTarget = candidate;
         }
 
-        return closestTarget;
+        return lowestTarget;
     }
 
     float HealerStateMachine::DistanceTo(const Canis::Entity& _other) const

@@ -73,7 +73,7 @@ namespace Healer
         void Destroy() override;
         void Update(float _dt) override;
 
-        Canis::Entity* FindClosestTarget() const;
+        Canis::Entity* FindLowestTarget() const;
         float DistanceTo(const Canis::Entity& _other) const;
         void FaceTarget(const Canis::Entity& _target);
         void MoveTowards(const Canis::Entity& _target, float _speed, float _dt);

@@ -179,7 +179,7 @@ namespace AICombat
             m_hasBaseColor = true;
         }
 
-        healthComponent.currentHealth =  maxHealth;
+        entity.GetComponent<AICombat::Health>().currentHealth =  maxHealth;
         m_stateTime = 0.0f;
         m_useFirstHitSfx = true;
 
@@ -329,7 +329,7 @@ namespace AICombat
 
     int BrawlerStateMachine::GetCurrentHealth() const
     {
-        return healthComponent.currentHealth;
+        return entity.GetComponent<AICombat::Health>().currentHealth;
     }
 
     void BrawlerStateMachine::ResetHammerPose()
@@ -359,14 +359,14 @@ namespace AICombat
         if (damageToApply <= 0)
             return;
 
-        healthComponent.currentHealth = healthComponent.currentHealth - damageToApply;
+        entity.GetComponent<AICombat::Health>().currentHealth = entity.GetComponent<AICombat::Health>().currentHealth - damageToApply;
         PlayHitSfx();
 
         if (m_hasBaseColor && entity.HasComponent<Canis::Material>())
         {
             Canis::Material& material = entity.GetComponent<Canis::Material>();
             const float healthRatio = (maxHealth > 0)
-                ? (static_cast<float>(healthComponent.currentHealth) / static_cast<float>(maxHealth))
+                ? (static_cast<float>(entity.GetComponent<AICombat::Health>().currentHealth) / static_cast<float>(maxHealth))
                 : 0.0f;
 
             material.color = Canis::Vector4(
@@ -376,7 +376,7 @@ namespace AICombat
                 m_baseColor.w);
         }
 
-        if (healthComponent.currentHealth > 0)
+        if (entity.GetComponent<AICombat::Health>().currentHealth > 0)
             return;
 
         if (logStateChanges)
@@ -418,6 +418,6 @@ namespace AICombat
 
     bool BrawlerStateMachine::IsAlive() const
     {
-        return healthComponent.currentHealth > 0;
+        return entity.GetComponent<AICombat::Health>().currentHealth > 0;
     }
 }
