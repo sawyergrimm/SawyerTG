@@ -250,7 +250,7 @@ Entities:
     AICombat::Health:
       currentHealth: 0
     AICombat::Team:
-      team: Green
+      team: Red
     Healer::HealerStateMachine:
       detectionRange: 20
       bodyColliderSize: [1, 1, 1]

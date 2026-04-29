@@ -170,7 +170,6 @@ namespace Healer
         }
 
         entity.GetComponent<AICombat::Health>().currentHealth = maxHealth;
-        Canis::Debug::Log("Healer Ready Health: %d", healthComponent.currentHealth);
         m_stateTime = 0.0f;
         m_useFirstHitSfx = true;
 
@@ -313,7 +312,7 @@ namespace Healer
 
     int HealerStateMachine::GetCurrentHealth() const
     {
-        return healthComponent.currentHealth;
+        return entity.GetComponent<AICombat::Health>().currentHealth;
     }
 
 
@@ -326,14 +325,14 @@ namespace Healer
         if (damageToApply <= 0)
             return;
 
-        healthComponent.currentHealth = std::max(0, healthComponent.currentHealth - damageToApply);
+        entity.GetComponent<AICombat::Health>().currentHealth = std::max(0, entity.GetComponent<AICombat::Health>().currentHealth - damageToApply);
         PlayHitSfx();
 
         if (m_hasBaseColor && entity.HasComponent<Canis::Material>())
         {
             Canis::Material& material = entity.GetComponent<Canis::Material>();
             const float healthRatio = (maxHealth > 0)
-                ? (static_cast<float>(healthComponent.currentHealth) / static_cast<float>(maxHealth))
+                ? (static_cast<float>(entity.GetComponent<AICombat::Health>().currentHealth) / static_cast<float>(maxHealth))
                 : 0.0f;
 
             material.color = Canis::Vector4(
@@ -342,11 +341,11 @@ namespace Healer
                 m_baseColor.z * (0.5f + (0.5f * healthRatio)),
                 m_baseColor.w);
         }
-
-        if (healthComponent.currentHealth > 0)
+        Canis::Debug::Log("DEBUG STATEMENT");
+        if (entity.GetComponent<AICombat::Health>().currentHealth > 0)
             return;
 
-        if (logStateChanges)
+        if (entity.GetComponent<AICombat::Health>().currentHealth <= 0)
             Canis::Debug::Log("%s was defeated.", entity.name.c_str());
 
         SpawnDeathEffect();
@@ -386,7 +385,7 @@ namespace Healer
 
     bool HealerStateMachine::IsAlive() const
     {
-        return healthComponent.currentHealth > 0;
+        return entity.GetComponent<AICombat::Health>().currentHealth > 0;
     }
 
     void HealerStateMachine::ReportHealth() {

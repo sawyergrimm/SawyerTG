@@ -96,6 +96,11 @@ namespace AICombat
                 continue;
 
             other->GetComponent<AICombat::Health>().currentHealth -= damage;
+            if (other->GetComponent<AICombat::Health>().currentHealth <= 0) {
+                other->SpawnDeathEffect();
+                other->Destroy();
+            }
+
             m_hitTargetsThisSwing.push_back(other);
             Canis::Debug::Log("Checkpoint %d", std::to_string(other->GetComponent<AICombat::Health>().currentHealth).c_str());
         }
