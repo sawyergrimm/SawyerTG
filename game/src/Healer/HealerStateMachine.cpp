@@ -60,9 +60,10 @@ namespace Healer
         }
 
         healerStatMachine->FaceTarget(*target);
-
-        if (healerStatMachine->DistanceTo(*target) <= healerStatMachine->GetHealRange())
+        Canis::Vector3 targetPosition = target->GetComponent<Canis::Transform>().position;
+        if (glm::length(healerStatMachine->entity.GetComponent<Canis::Transform>().position - (targetPosition - target->GetComponent<Canis::Transform>().GetForward() * 2.0f)) < 0.5f)
         {
+            Canis::Debug::Log("IM TRYNA CHAGE");
             healerStatMachine->ChangeState(HealState::Name);
             return;
         }
@@ -253,7 +254,9 @@ namespace Healer
 
         Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
         const Canis::Vector3 selfPosition = transform.GetGlobalPosition();
-        Canis::Vector3 direction = _target.GetComponent<Canis::Transform>().GetGlobalPosition() - selfPosition;
+        Canis::Vector3 otherPosition = _target.GetComponent<Canis::Transform>().GetGlobalPosition();
+        Canis::Vector3 behindPosition = otherPosition - _target.GetComponent<Canis::Transform>().GetForward() * 2.0f;
+        Canis::Vector3 direction = behindPosition - selfPosition;
         direction.y = 0.0f;
 
         if (glm::dot(direction, direction) <= 0.0001f)
@@ -270,7 +273,9 @@ namespace Healer
 
         Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
         const Canis::Vector3 selfPosition = transform.GetGlobalPosition();
-        Canis::Vector3 direction = _target.GetComponent<Canis::Transform>().GetGlobalPosition() - selfPosition;
+        Canis::Vector3 otherPosition = _target.GetComponent<Canis::Transform>().GetGlobalPosition();
+        otherPosition = otherPosition - _target.GetComponent<Canis::Transform>().GetForward() * 2.0f;
+        Canis::Vector3 direction = otherPosition - selfPosition;
         direction.y = 0.0f;
 
         if (glm::dot(direction, direction) <= 0.0001f)
