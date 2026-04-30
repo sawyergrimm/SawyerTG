@@ -1,0 +1,46 @@
+Environment:
+  ClearColor: [0.09, 0.12, 0.17, 1]
+Entities:
+  - Entity: 15396318575521414144
+    Name: MagicProjectile
+    Tag: ""
+    Canis::Transform:
+      active: true
+      position: [0, 0, 0]
+      rotation: [0, -0, 0]
+      scale: [0.7, 0.7, 0.7]
+      parent: 0
+      children:
+        - 12769937571452802868
+    Canis::PointLight:
+      enabled: true
+      color: [1, 0, 0.52941227, 1]
+      intensity: 1.2
+      range: 12
+    Canis::Material:
+      color: [0.82352924, 0, 1, 1]
+      MaterialAsset:
+        uuid: 17490362529814420531
+    Canis::Model:
+      color: [1, 0, 1, 1]
+      ModelAsset:
+        uuid: 17154083321347000101
+  - Entity: 12769937571452802868
+    Name: Sphere
+    Tag: ""
+    Canis::Transform:
+      active: true
+      position: [0, 0, 0]
+      rotation: [0, 0, 0]
+      scale: [1.4285715, 1.4285715, 1.4285715]
+      parent: 15396318575521414144
+      children:
+        []
+    Canis::Material:
+      color: [1, 0.11764706, 0.11764706, 1]
+      MaterialAsset:
+        uuid: 17490362529814420531
+    Canis::Model:
+      color: [1, 0.11764706, 0.11764706, 1]
+      ModelAsset:
+        uuid: 17154083321347000102

@@ -5,6 +5,7 @@
 #include <Canis/App.hpp>
 #include <Canis/ConfigHelper.hpp>
 #include <Canis/Debug.hpp>
+#include <Canis/AudioManager.hpp>
 #include <algorithm>
 
 namespace AICombat
@@ -19,6 +20,9 @@ namespace AICombat
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, owner);
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, sensorSize);
         REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, damage);
+        REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, hitSfxPath1);
+        REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, hitSfxPath2);
+        REGISTER_PROPERTY(hammerDamageConf, AICombat::HammerDamage, hitSfxVolume);
 
         DEFAULT_CONFIG_AND_REQUIRED(
             hammerDamageConf,
@@ -47,6 +51,8 @@ namespace AICombat
         rigidbody.angularVelocity = Canis::Vector3(0.0f);
 
         entity.GetComponent<Canis::BoxCollider>().size = sensorSize;
+        Canis::AudioAssetHandle hitSfxPath1 = { .path = "assets/audio/sfx/hit_1.ogg" };
+        Canis::AudioAssetHandle hitSfxPath2 = { .path = "assets/audio/sfx/hit_2.ogg" };
     }
 
     void HammerDamage::Ready()
@@ -56,6 +62,7 @@ namespace AICombat
 
         static AICombat::Team teamComponent = entity.GetComponent<AICombat::Team>();
         teamComponent.team = owner->GetComponent<AICombat::Team>().team;
+        m_useFirstHitSfx = true;
     }
 
     void HammerDamage::Update(float)
@@ -96,8 +103,9 @@ namespace AICombat
                 continue;
 
             other->GetComponent<AICombat::Health>().currentHealth -= damage;
+            PlayHitSfx();
             if (other->GetComponent<AICombat::Health>().currentHealth <= 0) {
-                other->SpawnDeathEffect();
+                SpawnDeathEffect(other);
                 other->Destroy();
             }
 
@@ -141,5 +149,37 @@ namespace AICombat
     {
         return std::find(m_hitTargetsThisSwing.begin(), m_hitTargetsThisSwing.end(), &_target)
             != m_hitTargetsThisSwing.end();
+    }
+
+    void HammerDamage::PlayHitSfx()
+    {
+        Canis::AudioAssetHandle& selectedSfx = m_useFirstHitSfx ? hitSfxPath1 : hitSfxPath2;
+        m_useFirstHitSfx = !m_useFirstHitSfx;
+
+        if (selectedSfx.Empty())
+            return;
+
+        Canis::AudioManager::PlaySFX(selectedSfx, std::clamp(hitSfxVolume, 0.0f, 1.0f));
+    }
+
+    void HammerDamage::SpawnDeathEffect(Entity* other)
+    {
+        Canis::Debug::Log("Yeah, I got called");
+        if (deathEffectPrefab.Empty() || !other->HasComponent<Canis::Transform>())
+            return;
+
+        const Canis::Transform& sourceTransform = other->GetComponent<Canis::Transform>();
+        const Canis::Vector3 spawnPosition = sourceTransform.GetGlobalPosition();
+        const Canis::Vector3 spawnRotation = sourceTransform.GetGlobalRotation();
+
+        for (Canis::Entity* spawnedEntity : other->scene.Instantiate(deathEffectPrefab))
+        {
+            if (spawnedEntity == nullptr || !spawnedEntity->HasComponent<Canis::Transform>())
+                continue;
+
+            Canis::Transform& spawnedTransform = spawnedEntity->GetComponent<Canis::Transform>();
+            spawnedTransform.position = spawnPosition;
+            spawnedTransform.rotation = spawnRotation;
+        }
     }
 }

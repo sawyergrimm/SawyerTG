@@ -131,9 +131,6 @@ namespace AICombat
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, entity.GetComponent<AICombat::Health>().maxHealth);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, logStateChanges);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hammerVisual);
-        REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hitSfxPath1);
-        REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hitSfxPath2);
-        REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hitSfxVolume);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, deathEffectPrefab);
 
         DEFAULT_CONFIG_AND_REQUIRED(
@@ -181,7 +178,6 @@ namespace AICombat
 
         entity.GetComponent<AICombat::Health>().currentHealth =  entity.GetComponent<AICombat::Health>().maxHealth;
         m_stateTime = 0.0f;
-        m_useFirstHitSfx = true;
 
         ClearStates();
         AddState(idleState);
@@ -353,14 +349,11 @@ namespace AICombat
 
     void BrawlerStateMachine::TakeDamage(int _damage)
     {
-        if (!IsAlive())
-            return;
         const int damageToApply = std::max(_damage, 0);
         if (damageToApply <= 0)
             return;
 
         entity.GetComponent<AICombat::Health>().currentHealth = entity.GetComponent<AICombat::Health>().currentHealth - damageToApply;
-        PlayHitSfx();
 
         if (m_hasBaseColor && entity.HasComponent<Canis::Material>())
         {
@@ -385,19 +378,9 @@ namespace AICombat
         entity.Destroy();
     }
 
-    void BrawlerStateMachine::PlayHitSfx()
-    {
-        const Canis::AudioAssetHandle& selectedSfx = m_useFirstHitSfx ? hitSfxPath1 : hitSfxPath2;
-        m_useFirstHitSfx = !m_useFirstHitSfx;
-
-        if (selectedSfx.Empty())
-            return;
-
-        Canis::AudioManager::PlaySFX(selectedSfx, std::clamp(hitSfxVolume, 0.0f, 1.0f));
-    }
-
     void BrawlerStateMachine::SpawnDeathEffect()
     {
+        Canis::Debug::Log("Yeah, I got called");
         if (deathEffectPrefab.Empty() || !entity.HasComponent<Canis::Transform>())
             return;
 

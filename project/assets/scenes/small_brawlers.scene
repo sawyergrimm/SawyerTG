@@ -54,7 +54,7 @@ Entities:
     Canis::Transform:
       active: true
       position: [0, 1, -9]
-      rotation: [0, -0, 0]
+      rotation: [0, 0, 0]
       scale: [18, 2, 0.5]
       parent: 0
       children:
@@ -129,8 +129,8 @@ Entities:
     Tag: StateMachine
     Canis::Transform:
       active: true
-      position: [-4.000061, 1, 0.06665099]
-      rotation: [0, -0, 0]
+      position: [-4, 1, 0]
+      rotation: [0, 0, 0]
       scale: [1, 1, 1]
       parent: 0
       children:
@@ -145,8 +145,8 @@ Entities:
       angularDamping: 0.05
       useGravity: false
       isSensor: false
-      layer: 1
-      mask: 1
+      layer: 255
+      mask: 255
       allowSleeping: false
       lockRotationX: false
       lockRotationY: false
@@ -157,22 +157,22 @@ Entities:
       active: true
       size: [1, 1, 1]
     Canis::Material:
-      color: [0.36764705, 0.108131476, 0.108131476, 1]
+      color: [0.24, 0.58, 0.98, 1]
       MaterialAsset:
         uuid: 17490362529814420531
     Canis::Model:
-      color: [0.98, 0.24000001, 0.24000001, 1]
+      color: [0.24, 0.58, 0.98, 1]
       ModelAsset:
         uuid: 17154083321347000101
     AICombat::BrawlerStateMachine:
       detectionRange: 20
       bodyColliderSize: [1, 1, 1]
-      moveSpeed: 4
+      moveSpeed: 3.4
       hammerRestDegrees: 140
       hammerSwingDegrees: -120
-      attackRange: 2.25
+      attackRange: 2.2
       attackDuration: 0.75
-      attackDamageTime: 0.25
+      attackDamageTime: 0.24
       entity.GetComponent<AICombat::Health>().maxHealth: 40
       logStateChanges: true
       hammerVisual: 11979571633178964622
@@ -182,7 +182,7 @@ Entities:
       hitSfxPath2:
         uuid: 15814014518013310489
         path: assets/audio/sfx/hit_2.ogg
-      hitSfxVolume: 1
+      hitSfxVolume: 0.1
       deathEffectPrefab: 1932126691914227009
     AICombat::Health:
       currentHealth: 0
@@ -190,7 +190,7 @@ Entities:
     AICombat::Team:
       team: Red
   - Entity: 920101
-    Name: Blue Hammer Handle
+    Name: Red Hammer Handle
     Tag: ""
     Canis::Transform:
       active: true
@@ -208,17 +208,17 @@ Entities:
       color: [0.78, 0.9, 1, 1]
       ModelAsset:
         uuid: 17154083321347000101
-  - Entity: 920110
-    Name: Healer
+  - Entity: 8758292306542945387
+    Name: Blue Brawler
     Tag: StateMachine
     Canis::Transform:
       active: true
-      position: [4.080751, 1, 0.04186987]
-      rotation: [3.1415908, -8.742277e-08, 3.1415908]
+      position: [4.6450806, 1, 0]
+      rotation: [0, -0, 0]
       scale: [1, 1, 1]
       parent: 0
       children:
-        - 17922756738381035608
+        - 11697216994644234149
     Canis::Rigidbody:
       active: true
       motionType: 1
@@ -229,8 +229,8 @@ Entities:
       angularDamping: 0.05
       useGravity: false
       isSensor: false
-      layer: 1
-      mask: 1
+      layer: 255
+      mask: 255
       allowSleeping: false
       lockRotationX: false
       lockRotationY: false
@@ -240,52 +240,51 @@ Entities:
     Canis::BoxCollider:
       active: true
       size: [1, 1, 1]
-    Canis::PointLight:
-      enabled: true
-      color: [0.27643567, 0.8872549, 0.056540735, 1]
-      intensity: 0
-      range: 12
     Canis::Material:
-      color: [0.48716846, 0.9117647, 0.1519608, 1]
+      color: [0.24, 0.58, 0.98, 1]
       MaterialAsset:
         uuid: 17490362529814420531
     Canis::Model:
-      color: [0.30086, 0.49019605, 0.15138407, 1]
+      color: [0.24, 0.58, 0.98, 1]
       ModelAsset:
         uuid: 17154083321347000101
-    AICombat::Health:
-      currentHealth: 0
-      maxHealth: 40
-    AICombat::Team:
-      team: Green
-    Healer::HealerStateMachine:
+    AICombat::BrawlerStateMachine:
       detectionRange: 20
       bodyColliderSize: [1, 1, 1]
-      moveSpeed: 4
-      healRange: 2
-      healTime: 0.75
-      healAmmount: 0.25
-      maxHealth: 40
+      moveSpeed: 3.4
+      hammerRestDegrees: 140
+      hammerSwingDegrees: -120
+      attackRange: 2.2
+      attackDuration: 0.75
+      attackDamageTime: 0.24
+      entity.GetComponent<AICombat::Health>().maxHealth: 40
       logStateChanges: true
+      hammerVisual: 11697216994644234149
       hitSfxPath1:
         uuid: 9101673412543458587
         path: assets/audio/sfx/hit_1.ogg
       hitSfxPath2:
         uuid: 15814014518013310489
         path: assets/audio/sfx/hit_2.ogg
-      hitSfxVolume: 1
-      deathEffectPrefab: 5996969740655538222
-  - Entity: 17922756738381035608
+      hitSfxVolume: 0.1
+      deathEffectPrefab: 1932126691914227009
+    AICombat::Health:
+      currentHealth: 0
+      maxHealth: 40
+    AICombat::Team:
+      team: Blue
+  - Entity: 11697216994644234149
     Name: Right Hand Root
     Tag: ""
     Canis::Transform:
       active: true
-      position: [0.731, 0.18722522, 6.354746e-07]
-      rotation: [1.5707964, 0, 0]
+      position: [0.7310178, 0.18722522, 0]
+      rotation: [1.5707964, -0, 0]
       scale: [1, 1, 1]
-      parent: 920110
+      parent: 8758292306542945387
       children:
-        - 12545027224714017549
+        - 17305238213444896321
+        - 3323145256917043911
   - Entity: 11979571633178964622
     Name: Right Hand Root
     Tag: ""
@@ -299,13 +298,13 @@ Entities:
         - 920101
         - 16852824116669955566
   - Entity: 16852824116669955566
-    Name: Blue Hammer Head
+    Name: Red Hammer Head
     Tag: ""
     Canis::Transform:
       active: true
       position: [0, -1.4210855e-14, -1.4746836]
       rotation: [0, -0, 0]
-      scale: [0.99995285, 1, 1]
+      scale: [1, 1, 1]
       parent: 11979571633178964622
       children:
         []
@@ -319,8 +318,8 @@ Entities:
       angularDamping: 0.05
       useGravity: false
       isSensor: true
-      layer: 1
-      mask: 1
+      layer: 255
+      mask: 255
       allowSleeping: false
       lockRotationX: false
       lockRotationY: false
@@ -339,108 +338,12 @@ Entities:
       ModelAsset:
         uuid: 17154083321347000101
     AICombat::HammerDamage:
-      owner: 920100
+      owner: 0
       sensorSize: [1, 1, 1]
       damage: 10
     AICombat::Team:
       team: Red
-  - Entity: 12545027224714017549
-    Name: Healing Wand
-    Tag: ""
-    Canis::Transform:
-      active: true
-      position: [0, -4.2252964e-08, -0.48331738]
-      rotation: [0, 0, 0]
-      scale: [0.24999192, 0.24999996, 1.1000001]
-      parent: 17922756738381035608
-      children:
-        []
-    Canis::Material:
-      color: [0.32843137, 0.28103232, 0.18192522, 1]
-      MaterialAsset:
-        uuid: 17490362529814420531
-    Canis::Model:
-      color: [0.78, 0.9, 1, 1]
-      ModelAsset:
-        uuid: 17154083321347000101
-  - Entity: 3863908246213772536
-    Name: Green Brawler
-    Tag: StateMachine
-    Canis::Transform:
-      active: true
-      position: [1.9052742, 1, 0.06665099]
-      rotation: [0, -0, 0]
-      scale: [1, 1, 1]
-      parent: 0
-      children:
-        - 14065528497569407283
-    Canis::Rigidbody:
-      active: true
-      motionType: 1
-      mass: 1
-      friction: 0.2
-      restitution: 0
-      linearDamping: 0.05
-      angularDamping: 0.05
-      useGravity: false
-      isSensor: false
-      layer: 1
-      mask: 1
-      allowSleeping: false
-      lockRotationX: false
-      lockRotationY: false
-      lockRotationZ: false
-      linearVelocity: [0, 0, 0]
-      angularVelocity: [0, 0, 0]
-    Canis::BoxCollider:
-      active: true
-      size: [1, 1, 1]
-    Canis::Material:
-      color: [0.1920924, 0.36764705, 0.10813146, 1]
-      MaterialAsset:
-        uuid: 17490362529814420531
-    Canis::Model:
-      color: [0.63176477, 0.98, 0.24000001, 1]
-      ModelAsset:
-        uuid: 17154083321347000101
-    AICombat::BrawlerStateMachine:
-      detectionRange: 20
-      bodyColliderSize: [1, 1, 1]
-      moveSpeed: 4
-      hammerRestDegrees: 140
-      hammerSwingDegrees: -120
-      attackRange: 2.25
-      attackDuration: 0.75
-      attackDamageTime: 0.25
-      entity.GetComponent<AICombat::Health>().maxHealth: 40
-      logStateChanges: true
-      hammerVisual: 14065528497569407283
-      hitSfxPath1:
-        uuid: 9101673412543458587
-        path: assets/audio/sfx/hit_1.ogg
-      hitSfxPath2:
-        uuid: 15814014518013310489
-        path: assets/audio/sfx/hit_2.ogg
-      hitSfxVolume: 1
-      deathEffectPrefab: 1932126691914227009
-    AICombat::Health:
-      currentHealth: 0
-      maxHealth: 40
-    AICombat::Team:
-      team: Green
-  - Entity: 14065528497569407283
-    Name: Right Hand Root
-    Tag: ""
-    Canis::Transform:
-      active: true
-      position: [0.7310178, 0.18722522, 0]
-      rotation: [1.5707964, -0, 0]
-      scale: [1, 1, 1]
-      parent: 3863908246213772536
-      children:
-        - 15372446135013599263
-        - 16105567475676715800
-  - Entity: 15372446135013599263
+  - Entity: 17305238213444896321
     Name: Blue Hammer Handle
     Tag: ""
     Canis::Transform:
@@ -448,7 +351,7 @@ Entities:
       position: [0, 0, -0.48331738]
       rotation: [0, -0, 0]
       scale: [0.24999192, 0.24999996, 1.1000001]
-      parent: 14065528497569407283
+      parent: 11697216994644234149
       children:
         []
     Canis::Material:
@@ -459,7 +362,7 @@ Entities:
       color: [0.78, 0.9, 1, 1]
       ModelAsset:
         uuid: 17154083321347000101
-  - Entity: 16105567475676715800
+  - Entity: 3323145256917043911
     Name: Blue Hammer Head
     Tag: ""
     Canis::Transform:
@@ -467,7 +370,7 @@ Entities:
       position: [0, -1.4210855e-14, -1.4746836]
       rotation: [0, -0, 0]
       scale: [0.99995285, 1, 1]
-      parent: 14065528497569407283
+      parent: 11697216994644234149
       children:
         []
     Canis::Rigidbody:
@@ -480,8 +383,8 @@ Entities:
       angularDamping: 0.05
       useGravity: false
       isSensor: true
-      layer: 1
-      mask: 1
+      layer: 255
+      mask: 255
       allowSleeping: false
       lockRotationX: false
       lockRotationY: false
@@ -500,8 +403,8 @@ Entities:
       ModelAsset:
         uuid: 17154083321347000101
     AICombat::HammerDamage:
-      owner: 3863908246213772536
+      owner: 0
       sensorSize: [1, 1, 1]
       damage: 10
     AICombat::Team:
-      team: Green
+      team: Blue

@@ -6,9 +6,9 @@
 #include <AICombat/Health.hpp>
 #include <string>
 
-namespace Healer
+namespace Mage
 {
-    class HealerStateMachine;
+    class MageStateMachine;
 
     class IdleState : public SuperPupUtilities::State
     {
@@ -34,7 +34,7 @@ namespace Healer
     class HealState : public SuperPupUtilities::State
     {
     public:
-        static constexpr const char* Name = "HealState";
+        static constexpr const char* Name = "MageState";
         float healRange = 2.00f;
         float healTime = 0.75f;
         float healAmmount = 0.25f;
@@ -45,10 +45,10 @@ namespace Healer
         void Exit() override;
     };
 
-    class HealerStateMachine : public SuperPupUtilities::StateMachine
+    class MageStateMachine : public SuperPupUtilities::StateMachine
     {
     public:
-        static constexpr const char* ScriptName = "Healer::HealerStateMachine";
+        static constexpr const char* ScriptName = "Mage::MageStateMachine";
 
         float countdown = 2.0f;
         std::string teamTag = "";
@@ -60,9 +60,9 @@ namespace Healer
         bool logStateChanges = true;
         Canis::AudioAssetHandle healSfxPath = { .path = "assets/audio/sfx/heal_1.ogg" };
         float healSfxVolume = 1.0f;
-        Canis::SceneAssetHandle deathEffectPrefab = { .path = "assets/prefabs/brawler_death_particles.scene" };
+        Canis::SceneAssetHandle deathEffectPrefab = { .path = "assets/prefabs/Mage_death_particles.scene" };
 
-        explicit HealerStateMachine(Canis::Entity& _entity);
+        explicit MageStateMachine(Canis::Entity& _entity);
 
         IdleState idleState;
         ChaseState chaseState;
@@ -99,6 +99,6 @@ namespace Healer
         bool m_useFirstHitSfx = true;
     };
 
-    void RegisterHealerStateMachineScript(Canis::App& _app);
-    void UnRegisterHealerStateMachineScript(Canis::App& _app);
+    void RegisterMageStateMachineScript(Canis::App& _app);
+    void UnRegisterMageStateMachineScript(Canis::App& _app);
 }

@@ -1,4 +1,4 @@
-#include <Healer/HealerStateMachine.hpp>
+#include <Mage/MageStateMachine.hpp>
 
 #include <Canis/App.hpp>
 #include <Canis/AudioManager.hpp>
@@ -11,11 +11,11 @@
 #include <cmath>
 #include <limits>
 
-namespace Healer
+namespace Mage
 {
     namespace
     {
-        ScriptConf healerStateMachineConf = {};
+        ScriptConf mageStateMachineConf = {};
     }
 
     IdleState::IdleState(SuperPupUtilities::StateMachine& _stateMachine) :
@@ -23,17 +23,17 @@ namespace Healer
 
     void IdleState::Enter()
     {
-        //if (HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine))
-            //healerStatMachine->ResetHammerPose();
+        //if (MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine))
+            //mageStatMachine->ResetHammerPose();
     }
 
     void IdleState::Update(float)
     {
-        if (HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine))
+        if (MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine))
         {
-            healerStatMachine->ReportHealth();
-            if (healerStatMachine->FindLowestTarget() != nullptr)
-                healerStatMachine->ChangeState(ChaseState::Name);
+            mageStatMachine->ReportHealth();
+            if (mageStatMachine->FindLowestTarget() != nullptr)
+                mageStatMachine->ChangeState(ChaseState::Name);
         }
     }
 
@@ -42,34 +42,34 @@ namespace Healer
 
     void ChaseState::Enter()
     {
-        //if (HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine))
-            //healerStatMachine->ResetHammerPose();
+        //if (MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine))
+            //mageStatMachine->ResetHammerPose();
     }
 
     void ChaseState::Update(float _dt)
     {
-        HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine);
-        if (healerStatMachine == nullptr)
+        MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine);
+        if (mageStatMachine == nullptr)
             return;
 
-        Canis::Entity* target = healerStatMachine->FindLowestTarget();
+        Canis::Entity* target = mageStatMachine->FindLowestTarget();
 
         if (target == nullptr)
         {
-            healerStatMachine->ChangeState(IdleState::Name);
+            mageStatMachine->ChangeState(IdleState::Name);
             return;
         }
 
-        healerStatMachine->FaceTarget(*target);
+        mageStatMachine->FaceTarget(*target);
         Canis::Vector3 targetPosition = target->GetComponent<Canis::Transform>().position;
-        if (glm::length(healerStatMachine->entity.GetComponent<Canis::Transform>().position - (targetPosition - target->GetComponent<Canis::Transform>().GetForward() * 2.0f)) < 0.5f)
+        if (glm::length(mageStatMachine->entity.GetComponent<Canis::Transform>().position - (targetPosition - target->GetComponent<Canis::Transform>().GetForward() * 2.0f)) < 0.5f)
         {
             Canis::Debug::Log("IM TRYNA CHAGE");
-            healerStatMachine->ChangeState(HealState::Name);
+            mageStatMachine->ChangeState(HealState::Name);
             return;
         }
 
-        healerStatMachine->MoveTowards(*target, moveSpeed, _dt);
+        mageStatMachine->MoveTowards(*target, moveSpeed, _dt);
     }
 
     HealState::HealState(SuperPupUtilities::StateMachine& _stateMachine) :
@@ -77,40 +77,40 @@ namespace Healer
 
     void HealState::Enter()
     {
-        HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine);
-        healerStatMachine->countdown = 2.0f;
-        //if (HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine))
-            //healerStatMachine->SetHammerSwing(0.0f);
+        MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine);
+        mageStatMachine->countdown = 2.0f;
+        //if (MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine))
+            //mageStatMachine->SetHammerSwing(0.0f);
     }
 
     void HealState::Update(float _dt)
     {
-        HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine);
-        if (healerStatMachine == nullptr)
+        MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine);
+        if (mageStatMachine == nullptr)
             return;
 
-        if (Canis::Entity* target = healerStatMachine->FindLowestTarget())
-            healerStatMachine->FaceTarget(*target);
+        if (Canis::Entity* target = mageStatMachine->FindLowestTarget())
+            mageStatMachine->FaceTarget(*target);
         else {return;}
 
 
-        if (healerStatMachine->countdown > 0.0f) {
-            healerStatMachine->countdown -= _dt;
-            if (Canis::Entity* target = healerStatMachine->FindLowestTarget()) {
+        if (mageStatMachine->countdown > 0.0f) {
+            mageStatMachine->countdown -= _dt;
+            if (Canis::Entity* target = mageStatMachine->FindLowestTarget()) {
                 if (target->GetComponent<AICombat::Health>().currentHealth < target->GetComponent<AICombat::Health>().maxHealth) {
-                    healerStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 10.0f * (2.0f - healerStatMachine->countdown / 2) - 8.0f;
+                    mageStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 10.0f * (2.0f - mageStatMachine->countdown / 2) - 8.0f;
                 }
-                if (healerStatMachine->DistanceTo(*target) > 3.0f) {
-                    healerStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 0.0f;
-                    healerStatMachine->ChangeState(ChaseState::Name);
+                if (mageStatMachine->DistanceTo(*target) > 3.0f) {
+                    mageStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 0.0f;
+                    mageStatMachine->ChangeState(ChaseState::Name);
                 }
             }
         }
         else {
-            healerStatMachine->Heal(healerStatMachine->FindLowestTarget());
-            healerStatMachine->countdown = 2.0f;
-            healerStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 0.0f;
-            healerStatMachine->ChangeState(IdleState::Name);
+            mageStatMachine->Heal(mageStatMachine->FindLowestTarget());
+            mageStatMachine->countdown = 2.0f;
+            mageStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 0.0f;
+            mageStatMachine->ChangeState(IdleState::Name);
         }
 
     }
@@ -119,43 +119,43 @@ namespace Healer
     {
     }
 
-    HealerStateMachine::HealerStateMachine(Canis::Entity& _entity) :
+    MageStateMachine::MageStateMachine(Canis::Entity& _entity) :
         SuperPupUtilities::StateMachine(_entity),
         idleState(*this),
         chaseState(*this),
         healState(*this) {}
 
-    void RegisterHealerStateMachineScript(Canis::App& _app)
+    void RegisterMageStateMachineScript(Canis::App& _app)
     {
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, detectionRange);
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, bodyColliderSize);
-        RegisterAccessorProperty(healerStateMachineConf, Healer::HealerStateMachine, chaseState, moveSpeed);
-        RegisterAccessorProperty(healerStateMachineConf, Healer::HealerStateMachine, healState, healRange);
-        RegisterAccessorProperty(healerStateMachineConf, Healer::HealerStateMachine, healState, healTime);
-        RegisterAccessorProperty(healerStateMachineConf, Healer::HealerStateMachine, healState, healAmmount);
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, maxHealth);
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, logStateChanges);
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, healSfxPath);
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, healSfxVolume);
-        REGISTER_PROPERTY(healerStateMachineConf, Healer::HealerStateMachine, deathEffectPrefab);
+        REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, detectionRange);
+        REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, bodyColliderSize);
+        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, chaseState, moveSpeed);
+        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, healState, healRange);
+        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, healState, healTime);
+        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, healState, healAmmount);
+        REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, maxHealth);
+        REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, logStateChanges);
+        REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, healSfxPath);
+        REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, healSfxVolume);
+        REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, deathEffectPrefab);
 
         DEFAULT_CONFIG_AND_REQUIRED(
-            healerStateMachineConf,
-            Healer::HealerStateMachine,
+            mageStateMachineConf,
+            Mage::MageStateMachine,
             Canis::Transform,
             Canis::Material,
             Canis::Model,
             Canis::Rigidbody,
             Canis::BoxCollider);
 
-        healerStateMachineConf.DEFAULT_DRAW_INSPECTOR(Healer::HealerStateMachine);
+        mageStateMachineConf.DEFAULT_DRAW_INSPECTOR(Mage::MageStateMachine);
 
-        _app.RegisterScript(healerStateMachineConf);
+        _app.RegisterScript(mageStateMachineConf);
     }
 
-    DEFAULT_UNREGISTER_SCRIPT(healerStateMachineConf, HealerStateMachine)
+    DEFAULT_UNREGISTER_SCRIPT(mageStateMachineConf, MageStateMachine)
 
-    void HealerStateMachine::Create()
+    void MageStateMachine::Create()
     {
         entity.GetComponent<Canis::Transform>();
         healthComponent = entity.GetComponent<AICombat::Health>();
@@ -178,7 +178,7 @@ namespace Healer
         }
     }
 
-    void HealerStateMachine::Ready()
+    void MageStateMachine::Ready()
     {
         if (entity.HasComponent<Canis::Material>())
         {
@@ -198,12 +198,12 @@ namespace Healer
         ChangeState(IdleState::Name);
     }
 
-    void HealerStateMachine::Destroy()
+    void MageStateMachine::Destroy()
     {
         SuperPupUtilities::StateMachine::Destroy();
     }
 
-    void HealerStateMachine::Update(float _dt)
+    void MageStateMachine::Update(float _dt)
     {
         if (!IsAlive())
             return;
@@ -212,7 +212,7 @@ namespace Healer
         SuperPupUtilities::StateMachine::Update(_dt);
     }
 
-    Canis::Entity* HealerStateMachine::FindLowestTarget() const
+    Canis::Entity* MageStateMachine::FindLowestTarget() const
     {
         if (!entity.HasComponent<Canis::Transform>())
             return nullptr;
@@ -257,7 +257,7 @@ namespace Healer
         return lowestTarget;
     }
 
-    float HealerStateMachine::DistanceTo(const Canis::Entity& _other) const
+    float MageStateMachine::DistanceTo(const Canis::Entity& _other) const
     {
         if (!entity.HasComponent<Canis::Transform>() || !_other.HasComponent<Canis::Transform>())
             return std::numeric_limits<float>::max();
@@ -267,7 +267,7 @@ namespace Healer
         return glm::distance(selfPosition, targetPosition);
     }
 
-    void HealerStateMachine::FaceTarget(const Canis::Entity& _target)
+    void MageStateMachine::FaceTarget(const Canis::Entity& _target)
     {
         if (!entity.HasComponent<Canis::Transform>() || !_target.HasComponent<Canis::Transform>())
             return;
@@ -285,7 +285,7 @@ namespace Healer
         transform.rotation.y = std::atan2(-direction.x, direction.z);
     }
 
-    void HealerStateMachine::MoveTowards(const Canis::Entity& _target, float _speed, float _dt)
+    void MageStateMachine::MoveTowards(const Canis::Entity& _target, float _speed, float _dt)
     {
         if (!entity.HasComponent<Canis::Transform>() || !_target.HasComponent<Canis::Transform>())
             return;
@@ -304,7 +304,7 @@ namespace Healer
         transform.position += direction * _speed * _dt;
     }
 
-    void HealerStateMachine::ChangeState(const std::string& _stateName)
+    void MageStateMachine::ChangeState(const std::string& _stateName)
     {
         if (SuperPupUtilities::StateMachine::GetCurrentStateName() == _stateName)
             return;
@@ -318,28 +318,28 @@ namespace Healer
             Canis::Debug::Log("%s -> %s", entity.name.c_str(), _stateName.c_str());
     }
 
-    const std::string& HealerStateMachine::GetCurrentStateName() const
+    const std::string& MageStateMachine::GetCurrentStateName() const
     {
         return SuperPupUtilities::StateMachine::GetCurrentStateName();
     }
 
-    float HealerStateMachine::GetStateTime() const
+    float MageStateMachine::GetStateTime() const
     {
         return m_stateTime;
     }
 
-    float HealerStateMachine::GetHealRange() const
+    float MageStateMachine::GetHealRange() const
     {
         return 2.0f;
     }
 
-    int HealerStateMachine::GetCurrentHealth() const
+    int MageStateMachine::GetCurrentHealth() const
     {
         return entity.GetComponent<AICombat::Health>().currentHealth;
     }
 
 
-    void HealerStateMachine::PlayHealSFX()
+    void MageStateMachine::PlayHealSFX()
     {
         /*
         const Canis::AudioAssetHandle& selectedSfx = m_useFirstHitSfx ? hitSfxPath1 : hitSfxPath2;
@@ -351,7 +351,7 @@ namespace Healer
         Canis::AudioManager::PlaySFX(healSfxPath, std::clamp(healSfxVolume, 0.0f, 1.0f));
     }
 
-    void HealerStateMachine::SpawnDeathEffect()
+    void MageStateMachine::SpawnDeathEffect()
     {
         if (deathEffectPrefab.Empty() || !entity.HasComponent<Canis::Transform>())
             return;
@@ -371,15 +371,15 @@ namespace Healer
         }
     }
 
-    bool HealerStateMachine::IsAlive() const
+    bool MageStateMachine::IsAlive() const
     {
         return entity.GetComponent<AICombat::Health>().currentHealth > 0;
     }
 
-    void HealerStateMachine::ReportHealth() {
+    void MageStateMachine::ReportHealth() {
     }
 
-    void HealerStateMachine::Heal(Entity* target) {
+    void MageStateMachine::Heal(Entity* target) {
         if (target->GetComponent<AICombat::Health>().currentHealth < target->GetComponent<AICombat::Health>().maxHealth) {
             PlayHealSFX();
             target->GetComponent<AICombat::Health>().currentHealth += 2;
