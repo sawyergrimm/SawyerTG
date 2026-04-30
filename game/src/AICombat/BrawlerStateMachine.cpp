@@ -128,7 +128,7 @@ namespace AICombat
         RegisterAccessorProperty(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hammerTimeState, attackRange);
         RegisterAccessorProperty(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hammerTimeState, attackDuration);
         RegisterAccessorProperty(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hammerTimeState, attackDamageTime);
-        REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, maxHealth);
+        REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, entity.GetComponent<AICombat::Health>().maxHealth);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, logStateChanges);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hammerVisual);
         REGISTER_PROPERTY(brawlerStateMachineConf, AICombat::BrawlerStateMachine, hitSfxPath1);
@@ -179,7 +179,7 @@ namespace AICombat
             m_hasBaseColor = true;
         }
 
-        entity.GetComponent<AICombat::Health>().currentHealth =  maxHealth;
+        entity.GetComponent<AICombat::Health>().currentHealth =  entity.GetComponent<AICombat::Health>().maxHealth;
         m_stateTime = 0.0f;
         m_useFirstHitSfx = true;
 
@@ -365,8 +365,8 @@ namespace AICombat
         if (m_hasBaseColor && entity.HasComponent<Canis::Material>())
         {
             Canis::Material& material = entity.GetComponent<Canis::Material>();
-            const float healthRatio = (maxHealth > 0)
-                ? (static_cast<float>(entity.GetComponent<AICombat::Health>().currentHealth) / static_cast<float>(maxHealth))
+            const float healthRatio = (entity.GetComponent<AICombat::Health>().maxHealth > 0)
+                ? (static_cast<float>(entity.GetComponent<AICombat::Health>().currentHealth) / static_cast<float>(entity.GetComponent<AICombat::Health>().maxHealth))
                 : 0.0f;
 
             material.color = Canis::Vector4(

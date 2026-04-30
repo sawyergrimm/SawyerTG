@@ -50,6 +50,7 @@ namespace Healer
     public:
         static constexpr const char* ScriptName = "Healer::HealerStateMachine";
 
+        float countdown = 2.0f;
         std::string teamTag = "";
         std::string team = "";
         float detectionRange = 20.0f;
@@ -86,6 +87,7 @@ namespace Healer
         void TakeDamage(int _damage);
         bool IsAlive() const;
         void ReportHealth();
+        void Heal(Canis::Entity*);
 
     private:
         void PlayHitSfx();

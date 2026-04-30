@@ -173,7 +173,7 @@ Entities:
       attackRange: 2.25
       attackDuration: 0.75
       attackDamageTime: 0.25
-      maxHealth: 40
+      entity.GetComponent<AICombat::Health>().maxHealth: 40
       logStateChanges: true
       hammerVisual: 11979571633178964622
       hitSfxPath1:
@@ -186,6 +186,7 @@ Entities:
       deathEffectPrefab: 1932126691914227009
     AICombat::Health:
       currentHealth: 0
+      maxHealth: 40
     AICombat::Team:
       team: Red
   - Entity: 920101
@@ -239,6 +240,11 @@ Entities:
     Canis::BoxCollider:
       active: true
       size: [1, 1, 1]
+    Canis::PointLight:
+      enabled: true
+      color: [0.27643567, 0.8872549, 0.056540735, 1]
+      intensity: 0
+      range: 12
     Canis::Material:
       color: [0.48716846, 0.9117647, 0.1519608, 1]
       MaterialAsset:
@@ -249,6 +255,7 @@ Entities:
         uuid: 17154083321347000101
     AICombat::Health:
       currentHealth: 0
+      maxHealth: 40
     AICombat::Team:
       team: Red
     Healer::HealerStateMachine:
@@ -338,7 +345,7 @@ Entities:
     AICombat::Team:
       team: Red
   - Entity: 12545027224714017549
-    Name: Healing Want
+    Name: Healing Wand
     Tag: ""
     Canis::Transform:
       active: true

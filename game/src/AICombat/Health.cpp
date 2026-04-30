@@ -14,6 +14,7 @@ namespace AICombat
     {
         // REGISTER_PROPERTY(componentConf, AICombat::Health, exampleProperty);
         REGISTER_PROPERTY(componentConf, AICombat::Health, currentHealth);
+        REGISTER_PROPERTY(componentConf, AICombat::Health, maxHealth);
 
         DEFAULT_COMPONENT_CONFIG(componentConf, AICombat::Health);
 

@@ -21,6 +21,7 @@ namespace AICombat
         Canis::Entity* entity = nullptr;
         bool active = true;
         int currentHealth;
+        int maxHealth;
     };
 
     void RegisterHealthComponent(Canis::App& _app);
