@@ -97,7 +97,6 @@ namespace AICombat
 
         if (brawlerStatMachine->GetStateTime() < duration)
             return;
-        Canis::Debug::Log("We made it to here");
 
         
         if (brawlerStatMachine->FindClosestTarget() != nullptr)
@@ -380,7 +379,6 @@ namespace AICombat
 
     void BrawlerStateMachine::SpawnDeathEffect()
     {
-        Canis::Debug::Log("Yeah, I got called");
         if (deathEffectPrefab.Empty() || !entity.HasComponent<Canis::Transform>())
             return;
 

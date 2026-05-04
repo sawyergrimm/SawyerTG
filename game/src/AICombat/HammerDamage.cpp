@@ -110,7 +110,6 @@ namespace AICombat
             }
 
             m_hitTargetsThisSwing.push_back(other);
-            Canis::Debug::Log("Checkpoint %d", std::to_string(other->GetComponent<AICombat::Health>().currentHealth).c_str());
         }
     }
 
@@ -164,7 +163,6 @@ namespace AICombat
 
     void HammerDamage::SpawnDeathEffect(Entity* other)
     {
-        Canis::Debug::Log("Yeah, I got called");
         if (deathEffectPrefab.Empty() || !other->HasComponent<Canis::Transform>())
             return;
 

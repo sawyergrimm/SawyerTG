@@ -32,8 +32,10 @@ namespace Healer
         if (HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine))
         {
             healerStatMachine->ReportHealth();
-            if (healerStatMachine->FindLowestTarget() != nullptr)
+            if (healerStatMachine->myTarget = healerStatMachine->FindLowestTarget()){
+                healerStatMachine->myTarget->GetComponent<AICombat::Health>().beingHealed = true;
                 healerStatMachine->ChangeState(ChaseState::Name);
+            }
         }
     }
 
@@ -52,7 +54,7 @@ namespace Healer
         if (healerStatMachine == nullptr)
             return;
 
-        Canis::Entity* target = healerStatMachine->FindLowestTarget();
+        Canis::Entity* target = healerStatMachine->myTarget;
 
         if (target == nullptr)
         {
@@ -89,14 +91,14 @@ namespace Healer
         if (healerStatMachine == nullptr)
             return;
 
-        if (Canis::Entity* target = healerStatMachine->FindLowestTarget())
+        if (Canis::Entity* target = healerStatMachine->myTarget)
             healerStatMachine->FaceTarget(*target);
         else {return;}
 
 
         if (healerStatMachine->countdown > 0.0f) {
             healerStatMachine->countdown -= _dt;
-            if (Canis::Entity* target = healerStatMachine->FindLowestTarget()) {
+            if (Canis::Entity* target = healerStatMachine->myTarget) {
                 if (target->GetComponent<AICombat::Health>().currentHealth < target->GetComponent<AICombat::Health>().maxHealth) {
                     healerStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 10.0f * (2.0f - healerStatMachine->countdown / 2) - 8.0f;
                 }
@@ -107,7 +109,7 @@ namespace Healer
             }
         }
         else {
-            healerStatMachine->Heal(healerStatMachine->FindLowestTarget());
+            healerStatMachine->Heal(healerStatMachine->myTarget);
             healerStatMachine->countdown = 2.0f;
             healerStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 0.0f;
             healerStatMachine->ChangeState(IdleState::Name);
@@ -117,6 +119,9 @@ namespace Healer
 
     void HealState::Exit()
     {
+        HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine);
+        healerStatMachine->myTarget->GetComponent<AICombat::Health>().beingHealed = false;
+
     }
 
     HealerStateMachine::HealerStateMachine(Canis::Entity& _entity) :
@@ -224,6 +229,9 @@ namespace Healer
 
         for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag("StateMachine"))
         {
+            if (candidate->GetComponent<AICombat::Health>().beingHealed == true) {
+                continue;
+            }
             if (candidate == nullptr || candidate == &entity || !candidate->active) {
                 continue;
             }
@@ -238,7 +246,7 @@ namespace Healer
 
             if (const AICombat::Health* other = candidate->GetScript<AICombat::Health>())
             {
-                if (other->currentHealth <= 0) {
+                if (other->currentHealth <= 0 || other->beingHealed) {
                     continue;
                 }
             }
@@ -253,7 +261,6 @@ namespace Healer
             lowestHealth = candidate->GetComponent<AICombat::Health>().currentHealth;
             lowestTarget = candidate;
         }
-
         return lowestTarget;
     }
 

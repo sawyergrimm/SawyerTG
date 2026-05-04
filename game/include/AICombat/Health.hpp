@@ -20,6 +20,7 @@ namespace AICombat
         void Create() {}
         Canis::Entity* entity = nullptr;
         bool active = true;
+        bool beingHealed = false;
         int currentHealth;
         int maxHealth;
     };

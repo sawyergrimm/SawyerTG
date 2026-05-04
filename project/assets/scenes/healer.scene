@@ -173,20 +173,13 @@ Entities:
       attackRange: 2.25
       attackDuration: 0.75
       attackDamageTime: 0.25
-      entity.GetComponent<AICombat::Health>().maxHealth: 40
+      entity.GetComponent<AICombat::Health>().maxHealth: 30
       logStateChanges: true
       hammerVisual: 11979571633178964622
-      hitSfxPath1:
-        uuid: 9101673412543458587
-        path: assets/audio/sfx/hit_1.ogg
-      hitSfxPath2:
-        uuid: 15814014518013310489
-        path: assets/audio/sfx/hit_2.ogg
-      hitSfxVolume: 1
       deathEffectPrefab: 1932126691914227009
     AICombat::Health:
       currentHealth: 0
-      maxHealth: 40
+      maxHealth: 30
     AICombat::Team:
       team: Red
   - Entity: 920101
@@ -213,7 +206,7 @@ Entities:
     Tag: StateMachine
     Canis::Transform:
       active: true
-      position: [4.080751, 1, 0.04186987]
+      position: [5.8252573, 1, -4.7496834]
       rotation: [3.1415908, -8.742277e-08, 3.1415908]
       scale: [1, 1, 1]
       parent: 0
@@ -267,13 +260,10 @@ Entities:
       healAmmount: 0.25
       maxHealth: 40
       logStateChanges: true
-      hitSfxPath1:
-        uuid: 9101673412543458587
-        path: assets/audio/sfx/hit_1.ogg
-      hitSfxPath2:
-        uuid: 15814014518013310489
-        path: assets/audio/sfx/hit_2.ogg
-      hitSfxVolume: 1
+      healSfxPath:
+        uuid: 6378552177399736276
+        path: assets/audio/sfx/heal_1.ogg
+      healSfxVolume: 0.1
       deathEffectPrefab: 5996969740655538222
   - Entity: 17922756738381035608
     Name: Right Hand Root
@@ -342,6 +332,13 @@ Entities:
       owner: 920100
       sensorSize: [1, 1, 1]
       damage: 10
+      hitSfxPath1:
+        uuid: 9101673412543458587
+        path: assets/audio/sfx/hit_1.ogg
+      hitSfxPath2:
+        uuid: 15814014518013310489
+        path: assets/audio/sfx/hit_2.ogg
+      hitSfxVolume: 0.1
     AICombat::Team:
       team: Red
   - Entity: 12545027224714017549
@@ -412,20 +409,13 @@ Entities:
       attackRange: 2.25
       attackDuration: 0.75
       attackDamageTime: 0.25
-      entity.GetComponent<AICombat::Health>().maxHealth: 40
+      entity.GetComponent<AICombat::Health>().maxHealth: 39
       logStateChanges: true
       hammerVisual: 14065528497569407283
-      hitSfxPath1:
-        uuid: 9101673412543458587
-        path: assets/audio/sfx/hit_1.ogg
-      hitSfxPath2:
-        uuid: 15814014518013310489
-        path: assets/audio/sfx/hit_2.ogg
-      hitSfxVolume: 1
       deathEffectPrefab: 1932126691914227009
     AICombat::Health:
       currentHealth: 0
-      maxHealth: 40
+      maxHealth: 39
     AICombat::Team:
       team: Green
   - Entity: 14065528497569407283
@@ -503,5 +493,106 @@ Entities:
       owner: 3863908246213772536
       sensorSize: [1, 1, 1]
       damage: 10
+      hitSfxPath1:
+        uuid: 9101673412543458587
+        path: assets/audio/sfx/hit_1.ogg
+      hitSfxPath2:
+        uuid: 15814014518013310489
+        path: assets/audio/sfx/hit_2.ogg
+      hitSfxVolume: 0.1
     AICombat::Team:
       team: Green
+  - Entity: 4423312773236169538
+    Name: Healer
+    Tag: StateMachine
+    Canis::Transform:
+      active: true
+      position: [4.080751, 1, 0.04186987]
+      rotation: [3.1415908, -8.742277e-08, 3.1415908]
+      scale: [1, 1, 1]
+      parent: 0
+      children:
+        - 13704894341859448218
+    Canis::Rigidbody:
+      active: true
+      motionType: 1
+      mass: 1
+      friction: 0.2
+      restitution: 0
+      linearDamping: 0.05
+      angularDamping: 0.05
+      useGravity: false
+      isSensor: false
+      layer: 1
+      mask: 1
+      allowSleeping: false
+      lockRotationX: false
+      lockRotationY: false
+      lockRotationZ: false
+      linearVelocity: [0, 0, 0]
+      angularVelocity: [0, 0, 0]
+    Canis::BoxCollider:
+      active: true
+      size: [1, 1, 1]
+    Canis::PointLight:
+      enabled: true
+      color: [0.27643567, 0.8872549, 0.056540735, 1]
+      intensity: 0
+      range: 12
+    Canis::Material:
+      color: [0.48716846, 0.9117647, 0.1519608, 1]
+      MaterialAsset:
+        uuid: 17490362529814420531
+    Canis::Model:
+      color: [0.30086, 0.49019605, 0.15138407, 1]
+      ModelAsset:
+        uuid: 17154083321347000101
+    AICombat::Health:
+      currentHealth: 0
+      maxHealth: 40
+    AICombat::Team:
+      team: Green
+    Healer::HealerStateMachine:
+      detectionRange: 20
+      bodyColliderSize: [1, 1, 1]
+      moveSpeed: 4
+      healRange: 2
+      healTime: 0.75
+      healAmmount: 0.25
+      maxHealth: 40
+      logStateChanges: true
+      healSfxPath:
+        uuid: 6378552177399736276
+        path: assets/audio/sfx/heal_1.ogg
+      healSfxVolume: 0.1
+      deathEffectPrefab: 5996969740655538222
+  - Entity: 13704894341859448218
+    Name: Right Hand Root
+    Tag: ""
+    Canis::Transform:
+      active: true
+      position: [0.731, 0.18722522, 6.354746e-07]
+      rotation: [1.5707964, 0, 0]
+      scale: [1, 1, 1]
+      parent: 4423312773236169538
+      children:
+        - 12891321181034394630
+  - Entity: 12891321181034394630
+    Name: Healing Wand
+    Tag: ""
+    Canis::Transform:
+      active: true
+      position: [0, -4.2252964e-08, -0.48331738]
+      rotation: [0, 0, 0]
+      scale: [0.24999192, 0.24999996, 1.1000001]
+      parent: 13704894341859448218
+      children:
+        []
+    Canis::Material:
+      color: [0.32843137, 0.28103232, 0.18192522, 1]
+      MaterialAsset:
+        uuid: 17490362529814420531
+    Canis::Model:
+      color: [0.78, 0.9, 1, 1]
+      ModelAsset:
+        uuid: 17154083321347000101

@@ -31,15 +31,15 @@ namespace Mage
         void Update(float _dt) override;
     };
 
-    class HealState : public SuperPupUtilities::State
+    class FireState : public SuperPupUtilities::State
     {
     public:
-        static constexpr const char* Name = "MageState";
+        static constexpr const char* Name = "FireState";
         float healRange = 2.00f;
         float healTime = 0.75f;
         float healAmmount = 0.25f;
 
-        explicit HealState(SuperPupUtilities::StateMachine& _stateMachine);
+        explicit FireState(SuperPupUtilities::StateMachine& _stateMachine);
         void Enter() override;
         void Update(float _dt) override;
         void Exit() override;
@@ -61,19 +61,24 @@ namespace Mage
         Canis::AudioAssetHandle healSfxPath = { .path = "assets/audio/sfx/heal_1.ogg" };
         float healSfxVolume = 1.0f;
         Canis::SceneAssetHandle deathEffectPrefab = { .path = "assets/prefabs/Mage_death_particles.scene" };
+        float projectileSpeed;
+        float projectileLifeTime;
+        float projectileHitImpulse;
+        Canis::SceneAssetHandle projectile;
+
 
         explicit MageStateMachine(Canis::Entity& _entity);
 
         IdleState idleState;
         ChaseState chaseState;
-        HealState healState;
+        FireState fireState;
 
         void Create() override;
         void Ready() override;
         void Destroy() override;
         void Update(float _dt) override;
 
-        Canis::Entity* FindLowestTarget() const;
+        Canis::Entity* FindClosestTarget() const;
         float DistanceTo(const Canis::Entity& _other) const;
         void FaceTarget(const Canis::Entity& _target);
         void MoveTowards(const Canis::Entity& _target, float _speed, float _dt);
@@ -87,6 +92,8 @@ namespace Mage
         bool IsAlive() const;
         void ReportHealth();
         void Heal(Canis::Entity*);
+        void Fire(const Canis::Vector3& _position, const Canis::Vector3& _direction);
+        void AltFire(Canis::SceneAssetHandle projectile);
 
     private:
         void PlayHealSFX();

@@ -61,6 +61,7 @@ namespace Healer
         Canis::AudioAssetHandle healSfxPath = { .path = "assets/audio/sfx/heal_1.ogg" };
         float healSfxVolume = 1.0f;
         Canis::SceneAssetHandle deathEffectPrefab = { .path = "assets/prefabs/brawler_death_particles.scene" };
+        Canis::Entity* myTarget;
 
         explicit HealerStateMachine(Canis::Entity& _entity);
 

@@ -6,7 +6,8 @@
 #include <Canis/Debug.hpp>
 #include <AICombat/Health.hpp>
 #include <AICombat/Team.hpp>
-
+#include <SuperPupUtilities/SimpleObjectPool.hpp>
+#include <SuperPupUtilities/Bullet.hpp>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -32,7 +33,7 @@ namespace Mage
         if (MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine))
         {
             mageStatMachine->ReportHealth();
-            if (mageStatMachine->FindLowestTarget() != nullptr)
+            if (mageStatMachine->FindClosestTarget() != nullptr)
                 mageStatMachine->ChangeState(ChaseState::Name);
         }
     }
@@ -52,7 +53,7 @@ namespace Mage
         if (mageStatMachine == nullptr)
             return;
 
-        Canis::Entity* target = mageStatMachine->FindLowestTarget();
+        Canis::Entity* target = mageStatMachine->FindClosestTarget();
 
         if (target == nullptr)
         {
@@ -62,60 +63,50 @@ namespace Mage
 
         mageStatMachine->FaceTarget(*target);
         Canis::Vector3 targetPosition = target->GetComponent<Canis::Transform>().position;
-        if (glm::length(mageStatMachine->entity.GetComponent<Canis::Transform>().position - (targetPosition - target->GetComponent<Canis::Transform>().GetForward() * 2.0f)) < 0.5f)
+        if (glm::length(mageStatMachine->entity.GetComponent<Canis::Transform>().position - targetPosition) < 8.0f)
         {
-            Canis::Debug::Log("IM TRYNA CHAGE");
-            mageStatMachine->ChangeState(HealState::Name);
+            mageStatMachine->ChangeState(FireState::Name);
             return;
         }
 
         mageStatMachine->MoveTowards(*target, moveSpeed, _dt);
     }
 
-    HealState::HealState(SuperPupUtilities::StateMachine& _stateMachine) :
+    FireState::FireState(SuperPupUtilities::StateMachine& _stateMachine) :
         State(Name, _stateMachine) {}
 
-    void HealState::Enter()
+    void FireState::Enter()
     {
         MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine);
-        mageStatMachine->countdown = 2.0f;
+        mageStatMachine->countdown = 0.5f;
         //if (MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine))
             //mageStatMachine->SetHammerSwing(0.0f);
     }
 
-    void HealState::Update(float _dt)
+    void FireState::Update(float _dt)
     {
         MageStateMachine* mageStatMachine = dynamic_cast<MageStateMachine*>(m_stateMachine);
         if (mageStatMachine == nullptr)
             return;
 
-        if (Canis::Entity* target = mageStatMachine->FindLowestTarget())
+        if (Canis::Entity* target = mageStatMachine->FindClosestTarget())
             mageStatMachine->FaceTarget(*target);
         else {return;}
 
 
         if (mageStatMachine->countdown > 0.0f) {
             mageStatMachine->countdown -= _dt;
-            if (Canis::Entity* target = mageStatMachine->FindLowestTarget()) {
-                if (target->GetComponent<AICombat::Health>().currentHealth < target->GetComponent<AICombat::Health>().maxHealth) {
-                    mageStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 10.0f * (2.0f - mageStatMachine->countdown / 2) - 8.0f;
-                }
-                if (mageStatMachine->DistanceTo(*target) > 3.0f) {
-                    mageStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 0.0f;
-                    mageStatMachine->ChangeState(ChaseState::Name);
-                }
-            }
         }
         else {
-            mageStatMachine->Heal(mageStatMachine->FindLowestTarget());
-            mageStatMachine->countdown = 2.0f;
-            mageStatMachine->entity.GetComponent<Canis::PointLight>().intensity = 0.0f;
+            Canis::SceneAssetHandle projectile = { .path = "assets/prefabs/magic_projectile.scene" };
+            mageStatMachine->AltFire(projectile);
+            mageStatMachine->countdown = 0.5f;
             mageStatMachine->ChangeState(IdleState::Name);
         }
 
     }
 
-    void HealState::Exit()
+    void FireState::Exit()
     {
     }
 
@@ -123,16 +114,17 @@ namespace Mage
         SuperPupUtilities::StateMachine(_entity),
         idleState(*this),
         chaseState(*this),
-        healState(*this) {}
+        fireState(*this) {}
 
     void RegisterMageStateMachineScript(Canis::App& _app)
     {
         REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, detectionRange);
         REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, bodyColliderSize);
+        REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, projectile);
         RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, chaseState, moveSpeed);
-        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, healState, healRange);
-        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, healState, healTime);
-        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, healState, healAmmount);
+        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, fireState, healRange);
+        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, fireState, healTime);
+        RegisterAccessorProperty(mageStateMachineConf, Mage::MageStateMachine, fireState, healAmmount);
         REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, maxHealth);
         REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, logStateChanges);
         REGISTER_PROPERTY(mageStateMachineConf, Mage::MageStateMachine, healSfxPath);
@@ -193,7 +185,7 @@ namespace Mage
         ClearStates();
         AddState(idleState);
         AddState(chaseState);
-        AddState(healState);
+        AddState(fireState);
 
         ChangeState(IdleState::Name);
     }
@@ -210,51 +202,6 @@ namespace Mage
 
         m_stateTime += _dt;
         SuperPupUtilities::StateMachine::Update(_dt);
-    }
-
-    Canis::Entity* MageStateMachine::FindLowestTarget() const
-    {
-        if (!entity.HasComponent<Canis::Transform>())
-            return nullptr;
-
-        const Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
-        const Canis::Vector3 origin = transform.GetGlobalPosition();
-        Canis::Entity* lowestTarget = nullptr;
-        int lowestHealth = 255;
-
-        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag("StateMachine"))
-        {
-            if (candidate == nullptr || candidate == &entity || !candidate->active) {
-                continue;
-            }
-
-            if (candidate->GetComponent<AICombat::Team>().team != entity.GetComponent<AICombat::Team>().team) {
-                continue;
-            }
-
-            if (!candidate->HasComponent<Canis::Transform>() || !candidate->HasComponent<AICombat::Health>()) {
-                continue;
-            }
-
-            if (const AICombat::Health* other = candidate->GetScript<AICombat::Health>())
-            {
-                if (other->currentHealth <= 0) {
-                    continue;
-                }
-            }
-
-            const Canis::Vector3 candidatePosition = candidate->GetComponent<Canis::Transform>().GetGlobalPosition();
-            const float distance = glm::distance(origin, candidatePosition);
-
-            if (candidate->GetComponent<AICombat::Health>().currentHealth >= lowestHealth) {
-                continue;
-            }
-
-            lowestHealth = candidate->GetComponent<AICombat::Health>().currentHealth;
-            lowestTarget = candidate;
-        }
-
-        return lowestTarget;
     }
 
     float MageStateMachine::DistanceTo(const Canis::Entity& _other) const
@@ -282,7 +229,7 @@ namespace Mage
             return;
 
         direction = glm::normalize(direction);
-        transform.rotation.y = std::atan2(-direction.x, direction.z);
+        transform.rotation.y = std::atan2(-direction.x, -direction.z);
     }
 
     void MageStateMachine::MoveTowards(const Canis::Entity& _target, float _speed, float _dt)
@@ -387,5 +334,92 @@ namespace Mage
                 target->GetComponent<AICombat::Health>().currentHealth = target->GetComponent<AICombat::Health>().maxHealth;
             }
         }
+    }
+
+    void MageStateMachine::AltFire(SceneAssetHandle projectile) {
+        std::vector<Entity*> projectileObject = entity.scene.Instantiate(projectile);
+        projectileObject[0]->GetComponent<Canis::Transform>().position = entity.GetComponent<Canis::Transform>().position;
+        projectileObject[0]->GetComponent<Canis::Transform>().rotation = entity.GetComponent<Canis::Transform>().rotation;
+        projectileObject[0]->GetComponent<AICombat::Team>().team = entity.GetComponent<AICombat::Team>().team;
+        return;
+    }
+
+    void MageStateMachine::Fire(const Canis::Vector3& _position, const Canis::Vector3& _direction)
+    {
+        const Canis::Vector3 flatDirection = glm::normalize(Canis::Vector3(_direction.x, 0.0f, _direction.z));
+        const float yaw = std::atan2(-flatDirection.x, -flatDirection.z);
+        const Canis::Vector3 rotation = Canis::Vector3(0.0f, yaw, 0.0f);
+
+        auto* pool = SuperPupUtilities::SimpleObjectPool::Instance;
+
+        if (pool == nullptr) {
+            Canis::Debug::Log("Failpoint 1");
+            return;
+        }
+
+        Canis::Entity* projectile = pool->Spawn("magic_projectile", _position, rotation);
+
+        if (projectile == nullptr) {
+            Canis::Debug::Log("Failpoint 2");
+            return;
+        }
+
+        if (SuperPupUtilities::Bullet* bullet = projectile->GetScript<SuperPupUtilities::Bullet>())
+        {
+            bullet->speed = projectileSpeed*10.0f;
+            bullet->lifeTime = projectileLifeTime;
+            bullet->hitImpulse = projectileHitImpulse;
+            bullet->Launch();
+            Canis::Debug::Log("Bullet should be launched.");
+        } else {
+            Canis::Debug::Log("Failpoint 3");
+        }
+    }
+
+    Canis::Entity* MageStateMachine::FindClosestTarget() const
+    {
+        if (!entity.HasComponent<Canis::Transform>())
+            return nullptr;
+
+        const Canis::Transform& transform = entity.GetComponent<Canis::Transform>();
+        const Canis::Vector3 origin = transform.GetGlobalPosition();
+        Canis::Entity* closestTarget = nullptr;
+        float closestDistance = detectionRange;
+        float lowestHealth = 255.0f;
+
+        for (Canis::Entity* candidate : entity.scene.GetEntitiesWithTag("StateMachine"))
+        {
+            if (candidate == nullptr || candidate == &entity || !candidate->active || !candidate->HasComponent<AICombat::Health>()) {
+                continue;
+            }
+
+
+            if (!candidate->HasComponent<Canis::Transform>()) {
+                continue;
+            }
+
+            if (candidate->GetComponent<AICombat::Team>().team == entity.GetComponent<AICombat::Team>().team) {
+                continue;
+            }
+
+            if (const AICombat::Health* other = candidate->GetScript<AICombat::Health>())
+            {
+                if (other->currentHealth <= 0) {
+                    continue;
+                }
+            }
+
+            const Canis::Vector3 candidatePosition = candidate->GetComponent<Canis::Transform>().GetGlobalPosition();
+            const float distance = glm::distance(origin, candidatePosition);
+
+            if (distance > detectionRange || distance >= closestDistance) {
+                continue;
+            }
+
+            closestDistance = distance;
+            closestTarget = candidate;
+        }
+
+        return closestTarget;
     }
 }
