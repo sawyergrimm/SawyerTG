@@ -213,7 +213,7 @@ Entities:
     Tag: StateMachine
     Canis::Transform:
       active: true
-      position: [-6.71918, 1, -4.6357265]
+      position: [-6.71918, 1, 0.039161563]
       rotation: [0, -0, 0]
       scale: [1, 1, 1]
       parent: 0
