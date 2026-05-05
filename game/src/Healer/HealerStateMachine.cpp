@@ -32,7 +32,7 @@ namespace Healer
         if (HealerStateMachine* healerStatMachine = dynamic_cast<HealerStateMachine*>(m_stateMachine))
         {
             healerStatMachine->ReportHealth();
-            if (healerStatMachine->myTarget = healerStatMachine->FindLowestTarget()){
+            if ((healerStatMachine->myTarget = healerStatMachine->FindLowestTarget())){
                 healerStatMachine->myTarget->GetComponent<AICombat::Health>().beingHealed = true;
                 healerStatMachine->ChangeState(ChaseState::Name);
             }

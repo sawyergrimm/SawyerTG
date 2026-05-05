@@ -209,7 +209,7 @@ Entities:
       ModelAsset:
         uuid: 17154083321347000101
   - Entity: 920100
-    Name: Red Brawler
+    Name: Mage
     Tag: StateMachine
     Canis::Transform:
       active: true
